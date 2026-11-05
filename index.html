@@ -1,0 +1,3172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رزنامة وجدول البطولة - قرعة ومتابعة النتائج</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Cairo:wght@400;600;700;800;900&family=Amiri:wght@700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- html2canvas for PNG Export (Facebook) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pitch: {
+                            800: '#0b381e',
+                            900: '#062413',
+                            accent: '#10b981',
+                            glow: '#34d399'
+                        },
+                        night: {
+                            800: '#0c162d',
+                            900: '#050b18',
+                            card: '#0f1f3d'
+                        },
+                        tozeur: {
+                            blue: '#0284c7',
+                            darkblue: '#03204e',
+                            badge: '#0369a1',
+                            border: '#38bdf8'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                        arabic: ['Cairo', 'sans-serif'],
+                        title: ['Amiri', 'serif'],
+                        display: ['Chakra Petch', 'Cairo', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #050b18; }
+        ::-webkit-scrollbar-thumb { background: #0284c7; border-radius: 3px; }
+
+        .banner-glow {
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.8), 0 0 24px rgba(2, 132, 199, 0.6);
+        }
+
+        /* Style d'écriture officiel pour le sous-titre de la récap (t2.jpg) */
+        .recap-subtitle-styling {
+            font-family: 'Chakra Petch', 'Cairo', sans-serif;
+            letter-spacing: 0.06em;
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.65), 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Capsule de match biseautée fidèle au design t2.jpg */
+        .t2-match-capsule {
+            background: linear-gradient(180deg, #0284c7 0%, #034f94 30%, #012a63 70%, #011d47 100%);
+            border: 1.5px solid #38bdf8;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.45), 0 3px 10px rgba(0,0,0,0.5);
+            clip-path: polygon(14px 0%, calc(100% - 14px) 0%, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0% 50%);
+            transition: all 0.2s ease;
+        }
+
+        .t2-match-capsule:hover {
+            border-color: #7dd3fc;
+            box-shadow: inset 0 1px 3px rgba(255,255,255,0.7), 0 5px 15px rgba(2, 132, 199, 0.5);
+        }
+
+        .t2-round-pill {
+            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 60%, #035299 100%);
+            border: 2px solid #7dd3fc;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.7), 0 4px 10px rgba(0,0,0,0.45);
+        }
+
+        .t2-board-stage {
+            background: radial-gradient(120% 120% at 50% 0%, #072659 0%, #031438 45%, #01081a 100%);
+            border: 2px solid #0284c7;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9), inset 0 1px 2px rgba(56,189,248,0.4);
+        }
+
+        .t2-center-banner {
+            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 45%, #033c77 100%);
+            border-top: 1.5px solid #7dd3fc;
+            box-shadow: 0 8px 25px rgba(2, 132, 199, 0.55), inset 0 2px 4px rgba(255,255,255,0.6);
+            clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+        }
+
+        .match-badge {
+            background: linear-gradient(180deg, #0284c7 0%, #03457a 100%);
+            border: 1px solid #38bdf8;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.5);
+            clip-path: polygon(6% 0%, 94% 0%, 100% 50%, 94% 100%, 6% 100%, 0% 50%);
+        }
+
+        .header-curve {
+            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 40%, #032d69 100%);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+            clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+        }
+
+        .pulse-active {
+            animation: pulseGlow 1.8s infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(2, 132, 199, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.9); }
+        }
+
+        /* Effet UEFA Champions League */
+        .ucl-card-gradient {
+            background: radial-gradient(120% 120% at 50% 0%, #152e68 0%, #081636 55%, #030816 100%);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            box-shadow: 0 10px 30px -5px rgba(2, 14, 44, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        .ucl-match-row {
+            background: linear-gradient(90deg, rgba(14, 30, 70, 0.85) 0%, rgba(9, 21, 52, 0.95) 50%, rgba(14, 30, 70, 0.85) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            box-shadow: inset 0 0 15px rgba(2, 132, 199, 0.08);
+            transition: all 0.25s ease;
+        }
+
+        .ucl-match-row:hover {
+            border-color: rgba(56, 189, 248, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -4px rgba(2, 132, 199, 0.3), inset 0 0 20px rgba(56, 189, 248, 0.15);
+        }
+
+        .ucl-score-box {
+            background: linear-gradient(180deg, #0284c7 0%, #03366f 100%);
+            border: 1px solid #38bdf8;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        /* Design Soccer League Standing (Style de l'image) */
+        .standing-stage-bg {
+            background: radial-gradient(circle at 50% 0%, #0284c7 0%, #033c7a 35%, #021a42 70%, #010c22 100%);
+            position: relative;
+            box-shadow: 0 20px 50px rgba(1, 12, 34, 0.95);
+        }
+
+        .standing-title-pill {
+            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 50%, #0369a1 100%);
+            border: 2px solid #7dd3fc;
+            box-shadow: 0 8px 25px rgba(2, 132, 199, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.7);
+        }
+
+        .standing-card-container {
+            background: linear-gradient(180deg, #0284c7 0%, #034f8a 12%, #022b5e 40%, #021b3d 100%);
+            border: 2px solid #38bdf8;
+            border-radius: 28px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.4);
+        }
+
+        .standing-header-bar {
+            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+            border-top-left-radius: 26px;
+            border-top-right-radius: 26px;
+            box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.6), 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .standing-rank-badge {
+            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 60%, #0369a1 100%);
+            border: 1px solid #7dd3fc;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7), 0 2px 5px rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+        }
+
+        /* NOUVEAU DESIGN UCL FIXTURES BOARD (Inspiré fidèlement de l'image UEFA Champions League) */
+        .ucl-board-stage {
+            background: radial-gradient(140% 120% at 20% 0%, #091c4d 0%, #05102b 45%, #020614 100%);
+            border: 2px solid rgba(56, 189, 248, 0.45);
+            box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.95), 0 0 50px rgba(14, 116, 244, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .ucl-round-ribbon {
+            background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 40%, #2563eb 80%, #0284c7 100%);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+            border-bottom: 2px solid rgba(125, 211, 252, 0.6);
+        }
+
+        .ucl-fixture-row-exact {
+            background: rgba(4, 14, 38, 0.85);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .ucl-fixture-row-exact:hover {
+            background: linear-gradient(90deg, rgba(8, 28, 77, 0.95) 0%, rgba(14, 42, 110, 0.95) 50%, rgba(8, 28, 77, 0.95) 100%);
+            border-bottom-color: rgba(56, 189, 248, 0.55);
+        }
+
+        .ucl-vs-text {
+            color: #38bdf8;
+            font-family: 'Chakra Petch', sans-serif;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.9), 0 0 20px rgba(2, 132, 199, 0.6);
+        }
+
+        /* ========================================================
+           RÈGLES D'IMPRESSION DYNAMIQUES A4 PAYSAGE / PORTRAIT
+           ======================================================== */
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                box-sizing: border-box !important;
+            }
+            html, body {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #01081a !important;
+                color: #f8fafc !important;
+            }
+            .no-print, header, footer, #toast, .no-print-in-section, .print-only-header {
+                display: none !important;
+            }
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+
+            /* --- 1. Impression Récapitulatif Général (A4 Paysage - 1 seule page) --- */
+            body.print-mode-recap @page {
+                size: A4 landscape;
+                margin: 5mm 8mm;
+            }
+            body.print-mode-recap html,
+            body.print-mode-recap body {
+                height: 100% !important;
+                max-height: 100vh !important;
+                overflow: hidden !important;
+            }
+            body.print-mode-recap #view-teams,
+            body.print-mode-recap #view-draw,
+            body.print-mode-recap #view-roundposter,
+            body.print-mode-recap #view-aller,
+            body.print-mode-recap #view-retour,
+            body.print-mode-recap #view-standings,
+            body.print-mode-recap #view-matrix {
+                display: none !important;
+            }
+            body.print-mode-recap #view-recap {
+                display: block !important;
+                width: 100% !important;
+                height: 100% !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            body.print-mode-recap #recap-print-area {
+                width: 100% !important;
+                height: 98vh !important;
+                max-height: 98vh !important;
+                padding: 8px 14px !important;
+                margin: 0 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                border-radius: 16px !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* --- 2. Impression Classement Général (A4 Paysage - 1 seule page) --- */
+            body.print-mode-standings @page {
+                size: A4 landscape;
+                margin: 6mm 10mm;
+            }
+            body.print-mode-standings html,
+            body.print-mode-standings body {
+                height: 100% !important;
+                max-height: 100vh !important;
+                overflow: hidden !important;
+            }
+            body.print-mode-standings #view-recap,
+            body.print-mode-standings #view-teams,
+            body.print-mode-standings #view-draw,
+            body.print-mode-standings #view-roundposter,
+            body.print-mode-standings #view-aller,
+            body.print-mode-standings #view-retour,
+            body.print-mode-standings #view-matrix {
+                display: none !important;
+            }
+            body.print-mode-standings #view-standings {
+                display: block !important;
+                width: 100% !important;
+                height: 100% !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            body.print-mode-standings #standings-capture-box {
+                width: 100% !important;
+                height: 97vh !important;
+                max-height: 97vh !important;
+                padding: 12px 18px !important;
+                margin: 0 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                border-radius: 20px !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            body.print-mode-standings #standings-capture-box > div.relative {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 100% !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+            }
+            body.print-mode-standings .standing-card-container {
+                flex: 1 1 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            body.print-mode-standings #standings-body {
+                flex: 1 1 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-around !important;
+            }
+            body.print-mode-standings #standings-body > div {
+                padding-top: 4px !important;
+                padding-bottom: 4px !important;
+            }
+
+            /* --- 3. Impression Recherche de Journée (A4 Portrait - 1 seule page) --- */
+            body.print-mode-roundposter @page {
+                size: A4 portrait;
+                margin: 8mm 8mm;
+            }
+            body.print-mode-roundposter html,
+            body.print-mode-roundposter body {
+                height: 100% !important;
+                max-height: 100vh !important;
+                overflow: hidden !important;
+            }
+            body.print-mode-roundposter #view-recap,
+            body.print-mode-roundposter #view-teams,
+            body.print-mode-roundposter #view-draw,
+            body.print-mode-roundposter #view-aller,
+            body.print-mode-roundposter #view-retour,
+            body.print-mode-roundposter #view-standings,
+            body.print-mode-roundposter #view-matrix {
+                display: none !important;
+            }
+            body.print-mode-roundposter #view-roundposter {
+                display: block !important;
+                width: 100% !important;
+                height: 100% !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            body.print-mode-roundposter #ucl-poster-container {
+                width: 100% !important;
+                height: 98vh !important;
+                max-height: 98vh !important;
+                padding: 14px 18px !important;
+                margin: 0 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                border-radius: 20px !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            body.print-mode-roundposter #ucl-matches-list {
+                flex: 1 1 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-around !important;
+                margin-top: 8px !important;
+            }
+            body.print-mode-roundposter .ucl-match-row {
+                padding: 8px 12px !important;
+            }
+
+            /* --- 4. Impression Phase Aller (A4 Portrait - Chaque Journée sur une seule page) --- */
+            body.print-mode-aller @page {
+                size: A4 portrait;
+                margin: 10mm 10mm;
+            }
+            body.print-mode-aller html,
+            body.print-mode-aller body {
+                height: auto !important;
+                overflow: visible !important;
+            }
+            body.print-mode-aller #view-recap,
+            body.print-mode-aller #view-teams,
+            body.print-mode-aller #view-draw,
+            body.print-mode-aller #view-roundposter,
+            body.print-mode-aller #view-retour,
+            body.print-mode-aller #view-standings,
+            body.print-mode-aller #view-matrix {
+                display: none !important;
+            }
+            body.print-mode-aller #view-aller {
+                display: block !important;
+                width: 100% !important;
+            }
+            body.print-mode-aller #schedule-aller-container {
+                max-width: 100% !important;
+                width: 100% !important;
+                display: block !important;
+            }
+            body.print-mode-aller #schedule-aller-container > div {
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                min-height: 94vh !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                padding: 16px !important;
+                margin-bottom: 0 !important;
+                border: 2px solid #0284c7 !important;
+            }
+            body.print-mode-aller #schedule-aller-container > div:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+
+            /* --- 5. Impression Phase Retour (A4 Portrait - Chaque Journée sur une seule page) --- */
+            body.print-mode-retour @page {
+                size: A4 portrait;
+                margin: 10mm 10mm;
+            }
+            body.print-mode-retour html,
+            body.print-mode-retour body {
+                height: auto !important;
+                overflow: visible !important;
+            }
+            body.print-mode-retour #view-recap,
+            body.print-mode-retour #view-teams,
+            body.print-mode-retour #view-draw,
+            body.print-mode-retour #view-roundposter,
+            body.print-mode-retour #view-aller,
+            body.print-mode-retour #view-standings,
+            body.print-mode-retour #view-matrix {
+                display: none !important;
+            }
+            body.print-mode-retour #view-retour {
+                display: block !important;
+                width: 100% !important;
+            }
+            body.print-mode-retour #schedule-retour-container {
+                max-width: 100% !important;
+                width: 100% !important;
+                display: block !important;
+            }
+            body.print-mode-retour #schedule-retour-container > div {
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                min-height: 94vh !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                padding: 16px !important;
+                margin-bottom: 0 !important;
+                border: 2px solid #f59e0b !important;
+            }
+            body.print-mode-retour #schedule-retour-container > div:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+
+            /* Éléments communs d'impression */
+            .official-logo {
+                display: flex !important;
+                visibility: visible !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-night-900 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+
+    <!-- ================= الواجهة الرسمية للبطولة (FAÇADE) ================= -->
+    <header class="border-b border-sky-900/60 bg-gradient-to-b from-tozeur-darkblue via-night-800 to-night-900 text-white relative shadow-2xl">
+        
+        <!-- البانر العلوي الرسمي كواجهة رئيسية للبطولة مع الشعارات -->
+        <div class="max-w-7xl mx-auto px-4 py-5 sm:px-6">
+            <div class="border border-sky-500/40 rounded-2xl p-4 sm:p-6 bg-gradient-to-r from-sky-950/80 via-tozeur-darkblue to-sky-950/80 relative overflow-hidden shadow-2xl">
+                <!-- خلفية زخرفية -->
+                <div class="absolute -left-10 -bottom-10 w-44 h-44 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -right-10 -top-10 w-44 h-44 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="flex flex-col gap-5 relative z-10">
+                    
+                    <!-- الواجهة الرسمية: الشعار الأيمن، العنوان المكبر بالوسط، والشعار الأيسر -->
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+                        <!-- الشعار الأول: شعار المكتب الجهوي بتوزر (يمين) -->
+                        <div class="w-20 h-24 sm:w-28 sm:h-32 rounded-2xl bg-amber-500/10 border-2 border-amber-400/50 p-1 flex items-center justify-center flex-shrink-0 shadow-xl overflow-hidden official-logo">
+                            <img id="main-facade-logo1" src="LOGO BRCST_TOZ.jpg" alt="المكتب الجهوي للثقافة والرياضة والعمل بتوزر" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/120x140/0f1f3d/f59e0b?text=TOZEUR';">
+                        </div>
+
+                        <!-- عنوان المنظمة مكبر وموضوع تماماً في الوسط -->
+                        <div class="flex-1 text-center px-2 sm:px-4">
+                            <h1 id="facade-organizer" class="text-2xl sm:text-4xl md:text-5xl font-black font-title tracking-wide text-white banner-glow leading-tight">
+                                المكتب الجهوي للثقافة والرياضة والعمل بتوزر
+                            </h1>
+                            
+                            <h2 id="facade-title" class="text-base sm:text-2xl font-extrabold text-sky-300 mt-2">
+                                رزنامة بطولة كرة القدم 6 لاعبين
+                            </h2>
+
+                            <!-- شارة الموسم الرياضي تحت اسم الدورة مباشرة -->
+                            <div class="mt-2 flex justify-center">
+                                <span id="facade-season-badge" class="inline-block px-4 py-1 rounded-full text-xs sm:text-sm font-black tracking-widest uppercase bg-sky-950/80 text-cyan-300 border border-sky-400/50 shadow-md">
+                                    موسم 2025-2026
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- الشعار الثاني: شعار المنظمة الوطنية (50 عاماً) (يسار) -->
+                        <div class="w-20 h-20 sm:w-28 sm:h-28 rounded-2xl bg-sky-500/10 border-2 border-sky-400/50 p-1 flex items-center justify-center flex-shrink-0 shadow-xl overflow-hidden official-logo">
+                            <img id="main-facade-logo2" src="logo.png" alt="المنظمة الوطنية للثقافة والرياضة والعمل" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/120x120/0f1f3d/38bdf8?text=ONCST';">
+                        </div>
+                    </div>
+
+                    <!-- أزرار الإجراءات السريعة ومبدل اللغة متمركزة في الأسفل -->
+                    <div class="flex flex-wrap items-center justify-center gap-2 pt-3 border-t border-sky-900/60 no-print">
+                        <!-- زر تبديل اللغة العربية / الفرنسية -->
+                        <button onclick="toggleLanguage()" class="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm shadow-md transition flex items-center gap-1.5 border border-amber-300">
+                            <i class="fa-solid fa-language text-sm"></i>
+                            <span id="lang-btn-text">Français</span>
+                        </button>
+
+                        <button onclick="openTournamentSettingsModal()" class="px-3 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs sm:text-sm shadow-md transition flex items-center gap-1.5 border border-sky-400/50">
+                            <i class="fa-solid fa-gear"></i>
+                            <span data-i18n="btnSettings">الإعدادات والشعارات والملاعب</span>
+                        </button>
+
+                        <button onclick="openAddTeamModal()" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm shadow-md transition flex items-center gap-1.5 border border-emerald-400/50">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span data-i18n="btnAddTeam">إضافة فريق</span>
+                        </button>
+                        <button onclick="printFormattedPage()" class="px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs sm:text-sm shadow-md transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-print"></i>
+                            <span data-i18n="btnPrint">طباعة</span>
+                        </button>
+                        <button onclick="saveToLocalStorage()" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-semibold border border-slate-700 transition flex items-center gap-1">
+                            <i class="fa-solid fa-floppy-disk text-emerald-400"></i>
+                        </button>
+                        <button onclick="resetTournament()" class="px-2.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs sm:text-sm font-semibold transition flex items-center gap-1" title="إعادة تعيين">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- القائمة الرئيسية للأقسام -->
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 flex gap-1 sm:gap-2 overflow-x-auto no-print border-t border-sky-950/50 pt-1">
+            <button onclick="switchTab('recap')" id="tab-recap" class="tab-btn px-4 py-3 text-xs sm:text-sm font-bold rounded-t-xl border-b-2 border-sky-400 text-sky-400 bg-sky-950/60 flex items-center gap-2">
+                <i class="fa-solid fa-table text-amber-400 text-sm"></i>
+                <span data-i18n="tabRecap">لوحة الرزنامة الشاملة</span>
+            </button>
+            <button onclick="switchTab('teams')" id="tab-teams" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 flex items-center gap-2">
+                <i class="fa-solid fa-users text-sm text-emerald-400"></i>
+                <span data-i18n="tabTeams">الفرق</span>
+            </button>
+            <button onclick="switchTab('draw')" id="tab-draw" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 flex items-center gap-2">
+                <i class="fa-solid fa-dice text-sm text-amber-400"></i>
+                <span data-i18n="tabDraw">القرعة</span>
+            </button>
+            <button onclick="switchTab('roundposter')" id="tab-roundposter" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass text-sm text-cyan-300"></i>
+                <span data-i18n="tabRoundPoster">البحث عن جولة</span>
+            </button>
+            <button onclick="switchTab('aller')" id="tab-aller" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left text-sm"></i>
+                <span data-i18n="tabAller">مرحلة الذهاب</span>
+            </button>
+            <button onclick="switchTab('retour')" id="tab-retour" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 flex items-center gap-2">
+                <i class="fa-solid fa-repeat text-sm"></i>
+                <span data-i18n="tabRetour">مرحلة الإياب</span>
+            </button>
+            <button onclick="switchTab('standings')" id="tab-standings" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 flex items-center gap-2">
+                <i class="fa-solid fa-ranking-star text-sm"></i>
+                <span data-i18n="tabStandings">الترتيب العام</span>
+            </button>
+            <button onclick="switchTab('matrix')" id="tab-matrix" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 flex items-center gap-2">
+                <i class="fa-solid fa-table-cells text-sm"></i>
+                <span data-i18n="tabMatrix">مصفوفة المواجهات</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- إشعار Toast -->
+    <div id="toast" class="fixed bottom-5 left-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-slate-800 border border-sky-500/40 text-slate-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-sky-400 text-lg"></i>
+        <span id="toast-msg" class="text-xs sm:text-sm">تم الإجراء بنجاح</span>
+    </div>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
+
+        <!-- ================= 1. القسم الأول : لوحة الرزنامة الشاملة ================= -->
+        <section id="view-recap" class="space-y-6">
+            <div class="flex items-center justify-between no-print mb-2 no-print-in-section">
+                <div class="text-xs text-sky-300 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span data-i18n="recapDescTip">جاهزة للتصدير كصورة لفيسبوك أو للطباعة الرسمية (مرحلة الذهاب)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="printFormattedPage()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center gap-1.5 shadow border border-slate-700 transition">
+                        <i class="fa-solid fa-print text-sky-400"></i> <span data-i18n="btnPrint">طباعة</span>
+                    </button>
+                    <button onclick="exportElementToPNG('recap-print-area', 'رزنامة_البطولة_الرسمية')" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 shadow">
+                        <i class="fa-solid fa-download"></i> <span data-i18n="btnExportPNG">تصدير الرزنامة PNG</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- حاوية الرزنامة الشاملة بتصميم الصورة t2.jpg بالكامل -->
+            <div id="recap-print-area" class="t2-board-stage rounded-3xl p-4 sm:p-7 shadow-2xl relative overflow-hidden">
+                
+                <!-- تأثيرات الإضاءة الزرقاء الخلفية الهادئة -->
+                <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-64 bg-sky-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+                <!-- ترويسة اللوحة العلوية المتطابقة مع t2.jpg -->
+                <div class="relative z-10 pb-2">
+                    <div class="flex items-center justify-between gap-4">
+                        <!-- الحاوية اليمنى: شعار المكتب الجهوي بتوزر -->
+                        <div class="w-16 h-20 sm:w-24 sm:h-28 flex-shrink-0 p-1.5 bg-sky-950/80 border-2 border-sky-400/60 rounded-2xl overflow-hidden flex items-center justify-center shadow-xl official-logo">
+                            <img id="recap-board-logo1" src="LOGO BRCST_TOZ.jpg" alt="المكتب الجهوي بتوزر" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/120x140/0f1f3d/f59e0b?text=TOZEUR';">
+                        </div>
+
+                        <!-- عنوان المنظمة والسطر الفرعي بالوسط طبقاً لـ t2.jpg -->
+                        <div class="flex-1 text-center">
+                            <h2 id="recap-board-organizer" class="text-2xl sm:text-4xl md:text-5xl font-black font-title tracking-wide text-white banner-glow leading-tight">
+                                المكتب الجهوي للثقافة والرياضة والعمل بتوزر
+                            </h2>
+                            
+                            <!-- السطر الفرعي الجامع: اسم البطولة والموسم والمرحلة بتصميم خط رياضي متقن -->
+                            <div class="mt-2.5 recap-subtitle-styling text-xs sm:text-sm md:text-base font-black tracking-wider flex items-center justify-center gap-2 flex-wrap">
+                                <span id="recap-board-tournament" class="text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-cyan-100 to-sky-300 font-extrabold">رزنامة بطولة كرة القدم 6 لاعبين</span>
+                                <span class="text-cyan-400 font-bold">•</span>
+                                <span id="recap-board-season-badge" class="px-2.5 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-400/50 text-amber-300 font-bold font-mono tracking-widest shadow-sm">موسم 2026-2027</span>
+                                <span class="text-cyan-300 font-semibold" id="recap-board-phase-label">(Phase Aller)</span>
+                            </div>
+                        </div>
+
+                        <!-- الحاوية اليسرى: شعار المنظمة الوطنية (50 عاماً) -->
+                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex-shrink-0 p-1.5 bg-sky-950/80 border-2 border-sky-400/60 rounded-2xl overflow-hidden flex items-center justify-center shadow-xl official-logo">
+                            <img id="recap-board-logo2" src="logo.png" alt="المنظمة الوطنية" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/120x120/0f1f3d/38bdf8?text=ONCST';">
+                        </div>
+                    </div>
+
+                    <!-- شريط العنوان المركزي المائل: RENCONTRES - PHASE ALLER -->
+                    <div class="flex justify-center mt-5 mb-2">
+                        <div class="t2-center-banner px-10 sm:px-20 py-1.5 sm:py-2 text-white font-display text-sm sm:text-lg font-black tracking-widest uppercase shadow-2xl text-center" id="recap-banner-text" data-i18n="matchesBannerTitle">
+                            RENCONTRES - PHASE ALLER
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جدول صفوف الجولات بتصميم الكبسولات المقطوعة الرأس الأفقية -->
+                <div class="relative z-10 space-y-3 sm:space-y-3.5 mt-3" id="recap-ucl-fixtures-container">
+                    <!-- يتم التوليد عبر renderRecapBoard() -->
+                </div>
+
+                <!-- شريط التذييل المطابق تماماً لأسفل صورة t2.jpg -->
+                <div class="mt-6 pt-3 border-t border-sky-500/30 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] sm:text-xs text-sky-300 font-sans">
+                    <div id="recap-footer-points-rule">
+                        * Barème des points : Victoire (3) • Nul (2) • Défaite (1) • Forfait F (0).
+                    </div>
+                    <div class="font-bold text-white tracking-wide" id="recap-footer-info">
+                        Total : 8 équipes • 7 journées (Phase Aller uniquement)
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 2. قسم إدارة الفرق (مستقل) ================= -->
+        <section id="view-teams" class="hidden space-y-6">
+            <div class="bg-gradient-to-r from-night-card via-slate-800 to-night-card border border-sky-500/30 rounded-2xl p-5 sm:p-6 shadow-xl no-print-in-section">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 border border-emerald-800 rounded-md mb-2" data-i18n="teamsSectionTag">
+                            إدارة النوادي والفرق المشاركة (من 2 إلى 10 فِرق)
+                        </span>
+                        <h2 class="text-xl sm:text-2xl font-bold font-title text-white" data-i18n="teamsSectionHeading">قائمة الفرق وتعديل الشعارات والأسماء</h2>
+                        <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed" data-i18n="teamsSectionDesc">
+                            يمكنك إضافة فرق جديدة، رفع وتعديل الشعارات، وتحديد الألوان والرموز المختصرة لكل نادٍ.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="printCurrentInterface('recap')" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center gap-1.5 shadow border border-slate-700 transition">
+                            <i class="fa-solid fa-print text-sky-400"></i> <span data-i18n="btnPrint">طباعة</span>
+                        </button>
+                        <button onclick="exportElementToPNG('recap-print-area', 'رزنامة_البطولة_الرسمية')" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 shadow">
+                            <i class="fa-solid fa-download"></i> <span data-i18n="btnExportPNG">تصدير الرزنامة PNG</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- شبكة الفرق الحالية -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="teams-grid">
+                <!-- مولد عبر JS -->
+            </div>
+        </section>
+
+        <!-- ================= 3. قسم القرعة (مستقل) ================= -->
+        <section id="view-draw" class="hidden space-y-6">
+            <div class="bg-gradient-to-r from-night-card via-slate-800 to-night-card border border-sky-500/30 rounded-2xl p-5 sm:p-6 shadow-xl no-print-in-section">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/60 border border-amber-800 rounded-md mb-2" data-i18n="drawSectionTag">
+                            منظومة إجراء القرعة الرسمية
+                        </span>
+                        <h2 class="text-xl sm:text-2xl font-bold font-title text-white" data-i18n="drawSectionHeading">سحب الكرات وتوزيع الأرقام على الفرق</h2>
+                        <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed" data-i18n="drawSectionDesc">
+                            اسحب الكرة عشوائياً من الوعاء ثم عيّنها يدوياً لأي فريق عبر القائمة المنسدلة، أو قم بإجراء قرعة سريعة بضغطة واحدة.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="resetManualDraw()" class="px-3.5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-amber-300 font-semibold text-xs sm:text-sm border border-slate-600 transition flex items-center gap-2">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                            <span data-i18n="btnResetDraw">إعادة ضبط القرعة</span>
+                        </button>
+                        <button onclick="quickDraw()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm shadow-md transition flex items-center gap-2">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span data-i18n="btnQuickDraw">قرعة سريعة كاملة</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- وحدة القرعة اليدوية عبر سحب عشوائي للكرة واختيار يدوي للفريق -->
+            <div class="bg-gradient-to-b from-slate-800/95 via-night-card to-slate-900 border-2 border-sky-500/50 rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    
+                    <!-- عرض الكرة العشوائية المسحوبة -->
+                    <div class="flex items-center gap-5 text-center sm:text-right">
+                        <div id="manual-draw-ball" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-tr from-amber-500 via-amber-300 to-yellow-100 text-slate-950 font-black text-4xl sm:text-5xl flex items-center justify-center shadow-2xl border-4 border-amber-200 transition-all transform hover:scale-105">
+                            ?
+                        </div>
+                        <div>
+                            <span class="px-3 py-1 rounded-full text-xs font-black bg-sky-950 text-sky-300 border border-sky-400/40 uppercase tracking-widest inline-block mb-1.5" data-i18n="randomBallBadge">
+                                الكرة العشوائية
+                            </span>
+                            <h3 id="manual-ball-status" class="text-lg sm:text-xl font-bold text-white">
+                                اضغط على "سحب كرة عشوائية"
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">
+                                <span data-i18n="remainingBallsLabel">الكرات المتبقية في الوعاء:</span> 
+                                <span id="remaining-balls-count" class="text-emerald-400 font-mono font-bold text-sm">8</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- أزرار السحب والتخصيص اليدوي للفريق -->
+                    <div class="w-full md:w-auto flex-1 max-w-lg bg-slate-900/80 border border-slate-700/80 rounded-2xl p-4 sm:p-5 space-y-3">
+                        <div class="flex items-center justify-between gap-2">
+                            <button id="btn-draw-random-ball" onclick="drawRandomBall()" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-lg transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-dice text-base"></i>
+                                <span data-i18n="btnDrawSingleBall">1. سحب كرة عشوائياً</span>
+                            </button>
+                        </div>
+
+                        <div class="space-y-1.5 pt-2 border-t border-slate-800">
+                            <label class="block text-xs font-bold text-sky-300 flex items-center justify-between">
+                                <span data-i18n="selectTeamForBall">2. اختر الفريق لمنحه هذا الرقم:</span>
+                                <span id="selected-ball-indicator" class="text-[11px] text-amber-300 font-mono">الكرة: -</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <select id="manual-team-select" class="flex-1 bg-slate-800 border-2 border-slate-600 focus:border-sky-400 text-white font-bold text-xs sm:text-sm rounded-xl px-3 py-2.5 outline-none">
+                                    <!-- يتم التعبئة عبر JS بالفرق التي لم تُمنح رقماً بعد -->
+                                </select>
+                                <button id="btn-assign-ball" onclick="assignBallToSelectedTeam()" disabled class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-black text-xs sm:text-sm transition flex items-center gap-1.5 shadow">
+                                    <i class="fa-solid fa-check"></i>
+                                    <span data-i18n="btnAssign">تأكيد</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- شريط استعراض أرقام الكرات المتبقية والمكتملة -->
+                <div class="mt-5 pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-slate-400 font-semibold" data-i18n="potBallsLabel">كرات الوعاء:</span>
+                        <div id="pot-balls-list" class="flex items-center gap-1.5 flex-wrap">
+                            <!-- أرقام الكرات المتبقية والمستخرجة -->
+                        </div>
+                    </div>
+                    <div id="draw-completion-status" class="text-slate-400 text-xs">
+                        <!-- حالة الإكتمال -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- بطاقات ملخصة لحالة سحب الفرق في صفحة القرعة -->
+            <div class="bg-night-card border border-sky-950/80 rounded-2xl p-4 sm:p-5">
+                <h4 class="text-sm font-bold text-sky-300 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-list-ol"></i>
+                    <span data-i18n="drawStatusSummaryHeading">حالة توزيع أرقام الفرق</span>
+                </h4>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="draw-teams-status-grid">
+                    <!-- يتم توليدها بواسطة JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 4. بوستر الجولة بتصميم دوري أبطال أوروبا (UCL Poster) ================= -->
+        <section id="view-roundposter" class="space-y-6 hidden">
+            <!-- شريط التحكم واختيار رقم الجولة -->
+            <div class="bg-gradient-to-r from-[#03112b] via-[#091b44] to-[#03112b] border border-cyan-500/40 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-4 no-print-in-section">
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-400 via-blue-600 to-indigo-900 flex items-center justify-center text-white text-lg shadow-lg border border-cyan-300 flex-shrink-0">
+                        <i class="fa-solid fa-star text-amber-300"></i>
+                    </div>
+                    <div>
+                        <span class="text-[11px] font-bold text-cyan-400 uppercase tracking-wider block" data-i18n="uclSelectNotice">تصميم ملصق المباريات الأوروبي</span>
+                        <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                            <span data-i18n="uclSelectRoundLabel">اختر الجولة للعرض :</span>
+                        </h3>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+                    <!-- القائمة المنسدلة لاختيار رقم الجولة -->
+                    <div class="relative min-w-[200px] flex-1 sm:flex-none">
+                        <select id="ucl-round-selector" onchange="changeSelectedRound(this.value)" class="w-full bg-[#030a1c] border-2 border-cyan-400/70 hover:border-cyan-300 text-white font-black text-sm rounded-xl px-4 py-2.5 shadow-xl focus:outline-none focus:ring-2 focus:ring-cyan-400 cursor-pointer transition">
+                            <!-- يعبأ تلقائياً بالـ JS -->
+                        </select>
+                    </div>
+
+                    <button onclick="printCurrentInterface('roundposter')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs sm:text-sm border border-slate-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-print"></i>
+                        <span data-i18n="btnPrint">طباعة</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- بوستر الجولة بنمط UEFA Champions League -->
+            <div id="ucl-poster-container" class="ucl-card-gradient rounded-3xl p-5 sm:p-8 text-white relative overflow-hidden border-2 border-cyan-500/50 shadow-2xl">
+                <!-- تأثيرات إضاءة وخلفية النجوم الشبيهة بدوري الأبطال -->
+                <div class="absolute -top-24 -left-24 w-80 h-80 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none"></div>
+
+                <!-- ترويسة البوستر الرسمي -->
+                <div class="text-center relative z-10 pb-5 border-b border-cyan-500/30">
+                    <!-- الشعارات الرسمية في واجهة البحث عن جولة -->
+                    <div class="flex items-center justify-between gap-4 mb-3">
+                        <div class="w-14 h-16 sm:w-20 sm:h-24 flex-shrink-0 p-1 bg-sky-950/70 border-2 border-cyan-400/50 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg official-logo">
+                            <img id="ucl-poster-logo1" src="LOGO BRCST_TOZ.jpg" alt="المكتب الجهوي بتوزر" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/120x140/0f1f3d/f59e0b?text=TOZEUR';">
+                        </div>
+
+                        <div class="flex-1 text-center">
+                            <div class="flex items-center justify-center gap-2 sm:gap-3 mb-1.5">
+                                <i class="fa-solid fa-star text-cyan-400 text-xs sm:text-sm"></i>
+                                <i class="fa-solid fa-star text-amber-300 text-sm sm:text-base"></i>
+                                <i class="fa-solid fa-trophy text-amber-400 text-sm sm:text-base"></i>
+                                <i class="fa-solid fa-star text-amber-300 text-sm sm:text-base"></i>
+                                <i class="fa-solid fa-star text-cyan-400 text-xs sm:text-sm"></i>
+                            </div>
+
+                            <h2 id="ucl-poster-organizer" class="text-lg sm:text-2xl md:text-3xl font-extrabold font-title tracking-wide text-white banner-glow">
+                                المكتب الجهوي للثقافة والرياضة والعمل بتوزر
+                            </h2>
+                            <h3 id="ucl-poster-tournament" class="text-xs sm:text-base font-bold text-sky-200 mt-1">
+                                بطولة كرة القدم 6 لاعبين
+                            </h3>
+
+                            <!-- نقل شارة الموسم الرياضي لتكون أسفل اسم البطولة مباشرة -->
+                            <div class="mt-2 flex justify-center">
+                                <span class="inline-block px-4 py-0.5 rounded-full text-xs font-black tracking-widest uppercase bg-cyan-950/80 text-cyan-300 border border-cyan-400/50 shadow" id="ucl-poster-season">
+                                    موسم 2025-2026
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="w-14 h-14 sm:w-20 sm:h-20 flex-shrink-0 p-1 bg-sky-950/70 border-2 border-cyan-400/50 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg official-logo">
+                            <img id="ucl-poster-logo2" src="logo.png" alt="المنظمة الوطنية" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/120x120/0f1f3d/38bdf8?text=ONCST';">
+                        </div>
+                    </div>
+
+                    <!-- شارة الجولة مع إزالة كلمة MATCHDAY والإبقاء على اسم الجولة والمرحلة فقط -->
+                    <div class="mt-4 inline-flex items-center gap-3 px-6 py-2 rounded-2xl bg-gradient-to-r from-blue-900/90 via-sky-900/90 to-blue-900/90 border border-cyan-400/60 shadow-xl">
+                        <i class="fa-solid fa-futbol text-cyan-400 text-lg"></i>
+                        <span id="ucl-poster-round-title" class="text-lg sm:text-2xl font-black font-display tracking-widest text-cyan-300 uppercase">
+                            الجولة 1
+                        </span>
+                        <span id="ucl-poster-phase-badge" class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-cyan-400 text-slate-950">
+                            ذهاب
+                        </span>
+                    </div>
+
+                    <!-- إشعار الفريق المعفى (إن وجد) -->
+                    <div id="ucl-poster-bye-box" class="hidden mt-3 max-w-md mx-auto py-1.5 px-4 rounded-xl bg-amber-500/10 border border-amber-400/40 text-amber-300 text-xs font-bold">
+                        <!-- يعبأ بالـ JS -->
+                    </div>
+                </div>
+
+                <!-- بطاقات المباريات بتصميم بطاقات دوري الأبطال -->
+                <div class="mt-6 space-y-4 relative z-10" id="ucl-matches-list">
+                    <!-- تعبأ ديناميكياً بواسطة جافاسكريبت -->
+                </div>
+
+                <!-- تذييل البوستر -->
+                <div class="mt-8 pt-4 border-t border-cyan-500/25 flex flex-wrap items-center justify-between text-[11px] text-cyan-200/80 relative z-10">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-cyan-400"></i>
+                        <span>قاعدة النقاط : فوز (3) • تعادل (2) • هزيمة (1) • انسحاب F (0)</span>
+                    </div>
+                    <div class="font-bold text-cyan-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-trophy text-amber-300"></i>
+                        <span id="ucl-footer-venue-info">المركب الشبابي بتوزر</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 4. مرحلة الذهاب ================= -->
+        <section id="view-aller" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-800 gap-3 no-print-in-section">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-bold font-title text-white flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-sky-400 inline-block"></span>
+                        <span data-i18n="headingAllerMatches">مرحلة الذهاب - تحديد الملعب، التوقيت والنتائج</span>
+                    </h2>
+                    <p class="text-xs text-slate-400" data-i18n="scoreInstructions">
+                        تسجيل الأهداف برقم فقط أو اختيار "F" للانسحاب (0 نقطة للمنسحب و3 نقاط للخصم). انقر على التاريخ لفتح الرزنامة.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="printCurrentInterface('aller')" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs shadow border border-slate-700 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-print text-sky-400"></i>
+                        <span data-i18n="btnPrint">طباعة</span>
+                    </button>
+                    <button onclick="fillRandomScores('aller')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium border border-slate-700 text-amber-300 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btnTestScores">تجربة نتائج</span>
+                    </button>
+                    <button onclick="clearScores('aller')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium border border-slate-700 text-rose-400 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-eraser"></i> <span data-i18n="btnClearScores">مسح النتائج</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- عرض الجولات أفقياً واحدة تلو الأخرى (عمود واحد رأسي) -->
+            <div id="schedule-aller-container" class="grid grid-cols-1 gap-4 max-w-4xl mx-auto">
+                <!-- بطاقات جولات الذهاب -->
+            </div>
+        </section>
+
+        <!-- ================= 5. مرحلة الإياب ================= -->
+        <section id="view-retour" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-800 gap-3 no-print-in-section">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-bold font-title text-white flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span>
+                        <span data-i18n="headingRetourMatches">مرحلة الإياب - تحديد الملعب والتوقيت والنتائج</span>
+                    </h2>
+                    <p class="text-xs text-slate-400" data-i18n="headingRetourSub">المباريات المعكوسة (الضيف يصبح المضيف)</p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="printCurrentInterface('retour')" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs shadow border border-slate-700 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-print text-sky-400"></i>
+                        <span data-i18n="btnPrint">طباعة</span>
+                    </button>
+                    <button onclick="fillRandomScores('retour')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium border border-slate-700 text-amber-300 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btnTestScores">تجربة نتائج</span>
+                    </button>
+                    <button onclick="clearScores('retour')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium border border-slate-700 text-rose-400 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-eraser"></i> <span data-i18n="btnClearScores">مسح النتائج</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- عرض الجولات أفقياً واحدة تلو الأخرى (عمود واحد رأسي) -->
+            <div id="schedule-retour-container" class="grid grid-cols-1 gap-4 max-w-4xl mx-auto">
+                <!-- بطاقات جولات الإياب -->
+            </div>
+        </section>
+
+        <!-- ================= 6. الترتيب العام المباشر ================= -->
+        <section id="view-standings" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-800 gap-3 no-print-in-section">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-bold font-title text-white flex items-center gap-2">
+                        <i class="fa-solid fa-trophy text-amber-400"></i>
+                        <span data-i18n="headingStandings">جدول الترتيب</span>
+                    </h2>
+                    <p class="text-xs text-emerald-400 font-semibold" data-i18n="standingsRuleDesc">قاعدة احتساب النقاط: فوز = 3 نقاط | تعادل = 2 نقطتان | هزيمة = 1 نقطة | انسحاب (F) = 0 نقطة</p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="printCurrentInterface('standings')" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs shadow border border-slate-700 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-print text-sky-400"></i>
+                        <span data-i18n="btnPrint">طباعة</span>
+                    </button>
+                    <button onclick="exportElementToPNG('standings-capture-box', 'ترتيب_البطولة')" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-download"></i>
+                        <span data-i18n="btnExportPNG">تصدير الترتيب PNG</span>
+                    </button>
+                    <button onclick="exportStandingsCSV()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-csv text-emerald-400"></i>
+                        <span>CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- حاوية الترتيب العام بتصميم الصورة تماماً (Stadium Spotlight & Blue League Card) -->
+            <div id="standings-capture-box" class="standing-stage-bg rounded-3xl p-6 sm:p-10 relative overflow-hidden border border-sky-400/30">
+                <!-- أضواء وتأثيرات الاستاد (Spotlights & Glows) -->
+                <div class="absolute -top-16 left-1/4 w-40 h-80 bg-cyan-300/25 blur-3xl transform -rotate-45 pointer-events-none"></div>
+                <div class="absolute -top-16 right-1/4 w-40 h-80 bg-cyan-300/25 blur-3xl transform rotate-45 pointer-events-none"></div>
+                <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-72 bg-sky-400/30 blur-2xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+                <!-- نجوم وبريق جانبي -->
+                <div class="absolute top-1/4 left-6 text-cyan-300/60 text-xl pointer-events-none animate-pulse">✦</div>
+                <div class="absolute top-1/3 right-8 text-cyan-200/50 text-2xl pointer-events-none animate-pulse">✦</div>
+                <div class="absolute bottom-1/4 left-12 text-cyan-400/40 text-sm pointer-events-none">✦</div>
+                <div class="absolute bottom-1/3 right-14 text-cyan-300/50 text-lg pointer-events-none">✦</div>
+
+                <!-- خطوط الإضاءة المائلة المشابهة للصورة -->
+                <div class="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-br from-sky-400/20 via-transparent to-transparent pointer-events-none"></div>
+                <div class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-bl from-sky-400/20 via-transparent to-transparent pointer-events-none"></div>
+
+                <div class="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
+                    
+                    <!-- ترويسة الترتيب العام بنفس تصميم وهوية خط "البحث عن جولة" مع الشعارات -->
+                    <div class="text-center w-full pb-6 mb-4 border-b border-cyan-500/30">
+                        <div class="flex items-center justify-between gap-4 mb-3">
+                            <div class="w-14 h-16 sm:w-20 sm:h-24 flex-shrink-0 p-1 bg-sky-950/70 border-2 border-cyan-400/50 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg official-logo">
+                                <img id="standings-header-logo1" src="LOGO BRCST_TOZ.jpg" alt="المكتب الجهوي بتوزر" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/120x140/0f1f3d/f59e0b?text=TOZEUR';">
+                            </div>
+
+                            <div class="flex-1 text-center">
+                                <div class="flex items-center justify-center gap-3 mb-1.5">
+                                    <i class="fa-solid fa-star text-cyan-400 text-xs sm:text-sm"></i>
+                                    <i class="fa-solid fa-star text-amber-300 text-sm sm:text-base"></i>
+                                    <i class="fa-solid fa-trophy text-amber-400 text-sm sm:text-base"></i>
+                                    <i class="fa-solid fa-star text-amber-300 text-sm sm:text-base"></i>
+                                    <i class="fa-solid fa-star text-cyan-400 text-xs sm:text-sm"></i>
+                                </div>
+
+                                <h2 id="standings-header-organizer" class="text-lg sm:text-2xl md:text-3xl font-extrabold font-title tracking-wide text-white banner-glow">
+                                    المكتب الجهوي للثقافة والرياضة والعمل بتوزر
+                                </h2>
+                                <h3 id="standings-header-tournament" class="text-xs sm:text-base font-bold text-sky-200 mt-1">
+                                    بطولة كرة القدم 6 لاعبين
+                                </h3>
+
+                                <!-- وضع الموسم تحت سطر بطولة كرة القدم 6 لاعبين -->
+                                <div class="mt-2">
+                                    <span class="inline-block px-4 py-0.5 rounded-full text-xs font-black tracking-widest uppercase bg-cyan-950/80 text-cyan-300 border border-cyan-400/50 shadow" id="standings-header-season">
+                                        موسم 2025-2026
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="w-14 h-14 sm:w-20 sm:h-20 flex-shrink-0 p-1 bg-sky-950/70 border-2 border-cyan-400/50 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg official-logo">
+                                <img id="standings-header-logo2" src="logo.png" alt="المنظمة الوطنية" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/120x120/0f1f3d/38bdf8?text=ONCST';">
+                            </div>
+                        </div>
+
+                        <!-- شارة عنوان الجدول: جدول الترتيب -->
+                        <div class="mt-3 inline-flex items-center gap-3 px-6 py-2 rounded-2xl bg-gradient-to-r from-blue-900/90 via-sky-900/90 to-blue-900/90 border border-cyan-400/60 shadow-xl">
+                            <i class="fa-solid fa-ranking-star text-cyan-400 text-lg"></i>
+                            <span class="text-lg sm:text-2xl font-black font-display tracking-widest text-cyan-300 uppercase" data-i18n="headingStandings">
+                                جدول الترتيب
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- بطاقة الترتيب الزرقاء المشابهة للصورة بالكامل -->
+                    <div class="w-full standing-card-container overflow-hidden">
+                        
+                        <!-- الشريط العلوي لأسماء الأعمدة -->
+                        <div class="standing-header-bar px-4 py-3 sm:px-6 sm:py-3.5 flex items-center text-white font-extrabold text-xs sm:text-sm tracking-wider">
+                            <div class="w-12 sm:w-16 text-center font-display flex-shrink-0" data-i18n="thRankShort">No.</div>
+                            <div class="flex-1 text-right font-display pr-2 truncate" data-i18n="thTeamLabel">Team</div>
+                            <div class="w-9 sm:w-11 text-center font-display flex-shrink-0" title="Matches Played" data-i18n="thP">P</div>
+                            <div class="w-9 sm:w-11 text-center font-display flex-shrink-0" title="Won" data-i18n="thW">W</div>
+                            <div class="w-9 sm:w-11 text-center font-display flex-shrink-0" title="Draw" data-i18n="thD">D</div>
+                            <div class="w-9 sm:w-11 text-center font-display flex-shrink-0" title="Lost" data-i18n="thL">L</div>
+                            <div class="w-9 sm:w-11 text-center font-display flex-shrink-0 text-amber-200" title="Forfeit" data-i18n="thF">Forfait</div>
+                            <div class="w-11 sm:w-13 text-center font-display flex-shrink-0" title="Goal Difference" data-i18n="thGD">GD</div>
+                            <div class="w-12 sm:w-16 text-center font-display font-black text-white flex-shrink-0" title="Points" data-i18n="thPTS">PTS</div>
+                        </div>
+
+                        <!-- قائمة صفوف الفرق -->
+                        <div id="standings-body" class="divide-y divide-sky-500/20">
+                            <!-- يتم التوليد عبر جافاسكريبت -->
+                        </div>
+
+                    </div>
+
+                    <!-- تذييل إضافي مصغر داخل البطاقة المصدرة -->
+                    <div class="mt-6 text-center text-xs text-sky-200/80 font-semibold flex items-center justify-center gap-3">
+                        <span id="standings-footer-organizer">المكتب الجهوي للثقافة والرياضة والعمل بتوزر</span>
+                        <span>•</span>
+                        <span id="standings-footer-season">موسم 2025-2026</span>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 7. مصفوفة النتائج المتقاطعة ================= -->
+        <section id="view-matrix" class="space-y-6 hidden">
+            <div class="pb-2 border-b border-slate-800 flex items-center justify-between no-print-in-section">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-bold font-title text-white flex items-center gap-2">
+                        <i class="fa-solid fa-table-cells text-sky-400"></i>
+                        <span data-i18n="headingMatrix">مصفوفة المواجهات المباشرة</span>
+                    </h2>
+                    <p class="text-xs text-slate-400" data-i18n="matrixSubDesc">السطر = المضيف | العمود = الضيف</p>
+                </div>
+                <button onclick="exportElementToPNG('matrix-capture-box', 'مصفوفة_المواجهات')" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow transition flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> <span data-i18n="btnExportPNG">تصدير صورة PNG</span>
+                </button>
+            </div>
+
+            <div id="matrix-capture-box" class="overflow-x-auto bg-night-card border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-xl">
+                <!-- ترويسة المصفوفة مع الشعارين الرسميين للطباعة والتصدير -->
+                <div class="flex items-center justify-between gap-4 pb-4 mb-4 border-b border-slate-800">
+                    <div class="w-14 h-16 sm:w-16 sm:h-20 flex-shrink-0 p-1 bg-sky-950/70 border-2 border-sky-400/40 rounded-xl overflow-hidden flex items-center justify-center shadow-lg official-logo">
+                        <img id="matrix-header-logo1" src="LOGO BRCST_TOZ.jpg" alt="المكتب الجهوي بتوزر" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/120x140/0f1f3d/f59e0b?text=TOZEUR';">
+                    </div>
+                    <div class="text-center flex-1">
+                        <h3 id="matrix-header-organizer" class="text-base sm:text-xl font-black font-title text-white banner-glow">المكتب الجهوي للثقافة والرياضة والعمل بتوزر</h3>
+                        <p id="matrix-header-tournament" class="text-xs sm:text-sm font-bold text-sky-300 mt-1">رزنامة بطولة كرة القدم 6 لاعبين</p>
+                        <span id="matrix-header-season" class="inline-block mt-1 px-3 py-0.5 rounded-full text-[11px] font-black bg-sky-950 text-cyan-300 border border-sky-500/40">موسم 2025-2026</span>
+                    </div>
+                    <div class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 p-1 bg-sky-950/70 border-2 border-sky-400/40 rounded-xl overflow-hidden flex items-center justify-center shadow-lg official-logo">
+                        <img id="matrix-header-logo2" src="logo.png" alt="المنظمة الوطنية" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/120x120/0f1f3d/38bdf8?text=ONCST';">
+                    </div>
+                </div>
+
+                <table id="matrix-table" class="w-full text-center text-xs border-collapse">
+                    <!-- يعبأ بالـ JS -->
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= النوافذ المنبثقة (MODALS) ================= -->
+        
+        <!-- 1. نافذة إضافة فريق جديد -->
+        <div id="add-team-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+            <div class="bg-night-card border border-sky-600/50 w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+                <h3 class="text-lg font-bold font-title text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-emerald-400"></i>
+                    <span data-i18n="modalAddTeamTitle">إضافة فريق جديد إلى البطولة</span>
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1" data-i18n="modalTeamNameLabel">اسم الفريق</label>
+                        <input type="text" id="add-team-name-ar" placeholder="مثال: الإنتخابات أو Santé" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1" data-i18n="modalTeamShortLabel">الرمز المختصر</label>
+                            <input type="text" id="add-team-short" maxlength="8" placeholder="إنتخاب" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1" data-i18n="modalTeamColorLabel">اللون الأساسي</label>
+                            <input type="color" id="add-team-color" value="#0284c7" class="w-full h-10 bg-slate-900 border border-slate-700 rounded-lg p-1 cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 mt-6">
+                    <button onclick="closeAddTeamModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition" data-i18n="btnCancel">إلغاء</button>
+                    <button onclick="confirmAddTeam()" class="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition" data-i18n="btnAddTeam">إضافة الفريق</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. نافذة تعديل بيانات الفريق وشعاره -->
+        <div id="team-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+            <div class="bg-night-card border border-sky-600/50 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+                <h3 class="text-lg font-bold font-title text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-sky-400"></i>
+                    <span data-i18n="modalEditTeamTitle">تعديل بيانات الفريق والشعار</span>
+                </h3>
+                <input type="hidden" id="modal-team-id">
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1" data-i18n="modalTeamNameLabel">اسم الفريق</label>
+                        <input type="text" id="modal-team-name-ar" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1" data-i18n="modalTeamShortLabel">الرمز المختصر</label>
+                        <input type="text" id="modal-team-short" maxlength="8" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500">
+                    </div>
+
+                    <!-- تخصيص الشعار بالصورة الخارجية أو الرفع -->
+                    <div class="p-3 bg-slate-900/90 rounded-xl border border-sky-900/60 space-y-3">
+                        <label class="block text-xs font-bold text-sky-400 uppercase tracking-wide" data-i18n="modalLogoHeader">شعار الفريق (صورة خارجية أو رفع من الجهاز)</label>
+                        
+                        <div class="flex items-center gap-4">
+                            <div id="modal-preview-box" class="w-14 h-14 rounded-xl flex items-center justify-center bg-slate-800 border border-slate-700 overflow-hidden shadow-inner flex-shrink-0">
+                                <span class="text-slate-500 text-xs">معاينة</span>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-[11px] text-slate-300 mb-1" data-i18n="modalUploadPrompt">رفع صورة من جهازك:</label>
+                                <input type="file" id="modal-team-file" accept="image/*" onchange="handleLogoUpload(event)" class="w-full text-xs text-slate-400 file:ml-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-600 file:text-white hover:file:bg-sky-500 cursor-pointer">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] text-slate-300 mb-1" data-i18n="modalUrlPrompt">أو رابط صورة على الإنترنت (URL):</label>
+                            <input type="url" id="modal-team-img-url" placeholder="https://example.com/logo.png" oninput="updateLogoPreviewFromInput()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1" data-i18n="modalTeamColorLabel">اللون الأساسي</label>
+                            <input type="color" id="modal-team-color" class="w-full h-10 bg-slate-900 border border-slate-700 rounded-lg p-1 cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1" data-i18n="modalAltIconLabel">الأيقونة البديلة</label>
+                            <select id="modal-team-icon" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500">
+                                <option value="fa-futbol">كرة قدم (Futbol)</option>
+                                <option value="fa-shield-halved">درع (Shield)</option>
+                                <option value="fa-trophy">كأس (Trophy)</option>
+                                <option value="fa-landmark">بلدية / معلم (Landmark)</option>
+                                <option value="fa-school">تربية / تعليم (School)</option>
+                                <option value="fa-plane-departure">مطار / طيران (Airport)</option>
+                                <option value="fa-wheat-awn">فلاحة (Agriculture)</option>
+                                <option value="fa-industry">صناعة وتجارة (Industry)</option>
+                                <option value="fa-phone">اتصالات (Phone)</option>
+                                <option value="fa-check-to-slot">إنتخابات (Elections)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-3 mt-6 pt-4 border-t border-slate-800">
+                    <button onclick="deleteCurrentTeam()" class="px-3.5 py-2 rounded-lg bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/40 text-xs font-bold transition flex items-center gap-1.5" data-i18n="btnDeleteTeam">
+                        <i class="fa-solid fa-trash"></i>
+                        <span>حذف الفريق</span>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="closeTeamModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition" data-i18n="btnCancel">إلغاء</button>
+                        <button onclick="saveTeamModal()" class="px-5 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold transition" data-i18n="btnSave">حفظ التعديلات</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. نافذة إعدادات البطولة وقائمة الملاعب المعتمدة والشعارات الرسمية -->
+        <div id="tournament-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+            <div class="bg-night-card border border-sky-600/50 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+                <h3 class="text-lg font-bold font-title text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-amber-400"></i>
+                    <span data-i18n="modalSettingsHeading">إعدادات البطولة والشعارات والملاعب</span>
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1" data-i18n="modalOrgLabel">الجهة المنظمة (الاسم الرسمي)</label>
+                        <input type="text" id="modal-tour-organizer" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1" data-i18n="modalTournamentLabel">اسم الدورة / البطولة</label>
+                        <input type="text" id="modal-tour-title" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1" data-i18n="modalSeasonLabel">الموسم الرياضي</label>
+                        <input type="text" id="modal-tour-season" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500">
+                    </div>
+
+                    <!-- تعديل الشعارات الرسمية للواجهة والطباعة -->
+                    <div class="p-3 bg-slate-900/90 rounded-xl border border-sky-900/60 space-y-3">
+                        <label class="block text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
+                            <i class="fa-solid fa-image"></i>
+                            <span data-i18n="modalOfficialLogosHeader">تعديل الشعارات الرسمية (روابط خارجية أو رفع ملف)</span>
+                        </label>
+                        
+                        <!-- الشعار الأيمن -->
+                        <div class="p-2.5 bg-slate-800/80 rounded-lg border border-slate-700 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-sky-300" data-i18n="modalLogo1Label">الشعار الأول (الأيمن - المكتب الجهوي)</span>
+                                <div id="preview-logo1-box" class="w-9 h-11 bg-slate-900 rounded border border-slate-600 p-0.5 overflow-hidden flex items-center justify-center">
+                                    <img id="preview-logo1-img" src="" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <input type="url" id="modal-logo1-url" placeholder="رابط صورة الشعار الأيمن (URL)" oninput="updateSettingsLogoPreview(1, this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] text-slate-400" data-i18n="modalOrUpload">أو رفع ملف:</span>
+                                <input type="file" accept="image/*" onchange="handleOfficialLogoUpload(1, event)" class="text-xs text-slate-400 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-600 file:text-white hover:file:bg-sky-500 cursor-pointer">
+                            </div>
+                        </div>
+
+                        <!-- الشعار الأيسر -->
+                        <div class="p-2.5 bg-slate-800/80 rounded-lg border border-slate-700 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-sky-300" data-i18n="modalLogo2Label">الشعار الثاني (الأيسر - المنظمة الوطنية)</span>
+                                <div id="preview-logo2-box" class="w-10 h-10 bg-slate-900 rounded border border-slate-600 p-0.5 overflow-hidden flex items-center justify-center">
+                                    <img id="preview-logo2-img" src="" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <input type="url" id="modal-logo2-url" placeholder="رابط صورة الشعار الأيسر (URL)" oninput="updateSettingsLogoPreview(2, this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] text-slate-400" data-i18n="modalOrUpload">أو رفع ملف:</span>
+                                <input type="file" accept="image/*" onchange="handleOfficialLogoUpload(2, event)" class="text-xs text-slate-400 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-600 file:text-white hover:file:bg-sky-500 cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- إدارة الملاعب -->
+                    <div class="p-3 bg-slate-900/90 rounded-xl border border-sky-900/60 space-y-3">
+                        <label class="block text-xs font-bold text-sky-400 uppercase tracking-wide flex items-center justify-between">
+                            <span><i class="fa-solid fa-layer-group ml-1"></i> <span data-i18n="modalVenuesHeader">قائمة الملاعب المعتمدة للمباريات</span></span>
+                            <span class="text-[11px] text-slate-400" data-i18n="modalVenuesNote">إضافة وحذف ملاعب</span>
+                        </label>
+                        
+                        <div class="flex gap-2">
+                            <input type="text" id="new-venue-input" placeholder="اسم الملعب الجديد (مثال: القاعة المغطاة بتوزر)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500">
+                            <button onclick="addVenueFromModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold" data-i18n="btnAddVenue">إضافة ملعب</button>
+                        </div>
+
+                        <div id="venues-list-container" class="space-y-1.5 max-h-36 overflow-y-auto">
+                            <!-- قائمة الملاعب الحالية -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 mt-6">
+                    <button onclick="closeTournamentSettingsModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition" data-i18n="btnCancel">إلغاء</button>
+                    <button onclick="saveTournamentSettings()" class="px-5 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold transition" data-i18n="btnSave">حفظ التغييرات</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- تذييل الصفحة -->
+    <footer class="mt-auto border-t border-sky-950 py-4 bg-night-900/90 text-center text-xs text-slate-400 no-print" data-i18n="footerText">
+        منظومة إدارة البطولات والجولات الرياضية • برمجة وجدولة آلية بتوزر • احتساب النقاط: فوز (3)، تعادل (2)، هزيمة (1)، انسحاب (0)
+    </footer>
+
+    <!-- منطق وتطبيق جافاسكريبت المحدث بالكامل -->
+    <script>
+        // ==========================================
+        // 1. نظام الترجمة (عربي / فرنسي)
+        // ==========================================
+        let currentLang = "ar";
+
+        const TRANSLATIONS = {
+            ar: {
+                langBtn: "Français",
+                teamsCountSuffix: "فِرق",
+                pointsRuleBadge: "فوز 3 • تعادل 2 • هزيمة 1 • انسحاب 0",
+                availableVenuesLabel: "الملاعب المتاحة:",
+                bergerFormatLabel: "ذهاب وإياب بنظام بيرغر",
+                btnSettings: "الإعدادات والشعارات والملاعب",
+                btnAddTeam: "إضافة فريق",
+                btnFacebookPNG: "تصدير فيسبوك PNG",
+                btnPrint: "طباعة",
+                tabRecap: "لوحة الرزنامة الشاملة",
+                tabTeams: "الفرق",
+                tabDraw: "القرعة",
+                tabRoundPoster: "البحث عن جولة",
+                tabAller: "مرحلة الذهاب",
+                tabRetour: "مرحلة الإياب",
+                tabStandings: "الترتيب العام",
+                tabMatrix: "مصفوفة المواجهات",
+                recapDescTip: "جاهزة للتصدير كصورة لفيسبوك أو للطباعة الرسمية (مرحلة الذهاب)",
+                btnExportPNG: "تصدير صورة PNG",
+                btnExportUclPNG: "تصدير الملصق لفيسبوك PNG",
+                uclSelectNotice: "عرض وتفاصيل مباريات الجولة",
+                uclSelectRoundLabel: "اختر الجولة لعرض ملصقها :",
+                recapTeamsTitle: "توزيع أرقام قرعة الفرق في البطولة",
+                matchesBannerTitle: "المـــقـــابـــلات - مرحلة الذهاب",
+                recapPointsNotice: "* قاعدة احتساب النقاط: فوز (3) • تعادل (2) • هزيمة (1) • انسحاب F (0).",
+                recapFooterSummary: "إجمالي: {count} فِرق • {rounds} جولات (مرحلة الذهاب فقط)",
+                teamsSectionTag: "إدارة النوادي والفرق المشاركة (من 2 إلى 10 فِرق)",
+                teamsSectionHeading: "قائمة الفرق وتعديل الشعارات والأسماء",
+                teamsSectionDesc: "يمكنك إضافة فرق جديدة، رفع وتعديل الشعارات، وتحديد الألوان والرموز المختصرة لكل نادٍ.",
+                drawSectionTag: "منظومة إجراء القرعة الرسمية",
+                drawSectionHeading: "سحب الكرات وتوزيع الأرقام على الفرق",
+                drawSectionDesc: "اسحب الكرة عشوائياً من الوعاء ثم عيّنها يدوياً لأي فريق عبر القائمة المنسدلة، أو قم بإجراء قرعة سريعة بضغطة واحدة.",
+                drawStatusSummaryHeading: "حالة توزيع أرقام الفرق",
+                btnLiveDraw: "قرعة حية تفاعلية",
+                btnQuickDraw: "قرعة سريعة كاملة",
+                btnResetDraw: "إعادة ضبط القرعة",
+                randomBallBadge: "الكرة العشوائية",
+                btnDrawSingleBall: "1. سحب كرة عشوائياً",
+                selectTeamForBall: "2. اختر الفريق لمنحه هذا الرقم:",
+                btnAssign: "تأكيد التعيين",
+                remainingBallsLabel: "الكرات المتبقية في الوعاء:",
+                potBallsLabel: "كرات الوعاء:",
+                drawBallLabel: "سحب الكرة رقم",
+                drawnTeamLabel: "الفريق المسحوب :",
+                drawnTeamSub: "نال الرقم الرسمي في الرزنامة: ",
+                drawNumPrefix: "رقم القرعة: ",
+                btnEditTeamBadge: "تعديل الشعار والاسم",
+                headingAller: "مرحلة الذهاب",
+                headingRetour: "مرحلة الإياب (عكس الميدان)",
+                headingAllerMatches: "مرحلة الذهاب - تحديد الملعب، التوقيت والنتائج",
+                headingRetourMatches: "مرحلة الإياب - تحديد الملعب والتوقيت والنتائج",
+                headingRetourSub: "المباريات المعكوسة (الضيف يصبح المضيف)",
+                scoreInstructions: "تسجيل الأهداف برقم فقط أو اختيار 'F' للانسحاب (0 نقطة للمنسحب و3 نقاط للخصم). انقر على التاريخ لفتح الرزنامة.",
+                btnTestScores: "تجربة نتائج",
+                btnClearScores: "مسح النتائج",
+                headingStandings: "جدول الترتيب",
+                standingsRuleDesc: "قاعدة احتساب النقاط: فوز = 3 نقاط | تعادل = 2 نقطتان | هزيمة = 1 نقطة | انسحاب (F) = 0 نقطة",
+                thRank: "المرتبة",
+                thRankShort: "الترتيب",
+                thTeam: "الفريق",
+                thTeamLabel: "الفريق",
+                thP: "لعب",
+                thW: "فاز",
+                thD: "تعادل",
+                thL: "خسر",
+                thF: "انسحاب",
+                thGD: "الفارق",
+                thPTS: "النقاط",
+                thPlayed: "لعب",
+                thWon: "فاز (3)",
+                thDraw: "تعادل (2)",
+                thLost: "خسر (1)",
+                thForfeit: "انسحاب (F)",
+                thGF: "له",
+                thGA: "عليه",
+                thDiff: "الفارق",
+                thPoints: "النقاط",
+                thLastMatches: "آخر المباريات",
+                headingMatrix: "مصفوفة المواجهات المباشرة",
+                matrixSubDesc: "السطر = المضيف | العمود = الضيف",
+                matrixHomeAway: "المضيف \\ الضيف",
+                modalAddTeamTitle: "إضافة فريق جديد إلى البطولة",
+                modalEditTeamTitle: "تعديل بيانات الفريق والشعار",
+                modalTeamNameLabel: "اسم الفريق",
+                modalTeamShortLabel: "الرمز المختصر",
+                modalTeamColorLabel: "اللون الأساسي",
+                modalLogoHeader: "شعار الفريق (صورة خارجية أو رفع من الجهاز)",
+                modalUploadPrompt: "رفع صورة من جهازك:",
+                modalUrlPrompt: "أو رابط صورة على الإنترنت (URL):",
+                modalAltIconLabel: "الأيقونة البديلة",
+                btnDeleteTeam: "حذف الفريق",
+                btnCancel: "إلغاء",
+                btnSave: "حفظ التعديلات",
+                modalSettingsHeading: "إعدادات البطولة والشعارات والملاعب",
+                modalOfficialLogosHeader: "تعديل الشعارات الرسمية (روابط خارجية أو رفع ملف)",
+                modalLogo1Label: "الشعار الأول (الأيمن - المكتب الجهوي)",
+                modalLogo2Label: "الشعار الثاني (الأيسر - المنظمة الوطنية)",
+                modalOrUpload: "أو رفع ملف:",
+                modalOrgLabel: "الجهة المنظمة (الاسم الرسمي)",
+                modalTournamentLabel: "اسم الدورة / البطولة",
+                modalSeasonLabel: "الموسم الرياضي",
+                modalVenuesHeader: "قائمة الملاعب المعتمدة للمباريات",
+                modalVenuesNote: "إضافة وحذف ملاعب",
+                btnAddVenue: "إضافة ملعب",
+                footerText: "منظومة إدارة البطولات والجولات الرياضية • برمجة وجدولة آلية بتوزر • احتساب النقاط: فوز (3)، تعادل (2)، هزيمة (1)، انسحاب (0)",
+                roundPrefix: "الجولة ",
+                exemptLabel: "معفى:",
+                scoreOptionPlaceholder: "- لم تلعب -",
+                forfeitDisplay: "F",
+                chooseTime: "-- اختر التوقيت --",
+                printTitles: {
+                    recap: "لوحة الرزنامة الرسمية (مرحلة الذهاب)",
+                    roundposter: "ملصق مباريات الجولة الرسمية",
+                    aller: "نتائج ومواعيد مرحلة الذهاب",
+                    retour: "نتائج ومواعيد مرحلة الإياب",
+                    standings: "جدول الترتيب العام المباشر",
+                    matrix: "مصفوفة نتائج المواجهات المباشرة",
+                    draw: "قائمة الأندية والقرعة"
+                }
+            },
+            fr: {
+                langBtn: "العربية",
+                teamsCountSuffix: "Équipes",
+                pointsRuleBadge: "Victoire 3 • Nul 2 • Défaite 1 • Forfait 0",
+                availableVenuesLabel: "Terrains disponibles :",
+                bergerFormatLabel: "Aller-Retour (Table de Berger)",
+                btnSettings: "Paramètres, Logos & Terrains",
+                btnAddTeam: "Ajouter Équipe",
+                btnFacebookPNG: "Export Facebook PNG",
+                btnPrint: "Imprimer",
+                tabRecap: "Récapitulatif Général",
+                tabTeams: "Équipes",
+                tabDraw: "Tirage au Sort",
+                tabRoundPoster: "Rechercher une Journée",
+                tabAller: "Phase Aller",
+                tabRetour: "Phase Retour",
+                tabStandings: "Classement Général",
+                tabMatrix: "Matrice des Matchs",
+                recapDescTip: "Prêt pour impression officielle ou export PNG pour Facebook (Phase Aller)",
+                btnExportPNG: "Exporter PNG",
+                btnExportUclPNG: "Exporter Affiche Facebook PNG",
+                uclSelectNotice: "Détails et affichage des matchs de la journée",
+                uclSelectRoundLabel: "Choisir la journée à afficher :",
+                recapTeamsTitle: "Attribution des numéros de tirage",
+                matchesBannerTitle: "RENCONTRES - Phase Aller",
+                recapPointsNotice: "* Barème des points : Victoire (3) • Nul (2) • Défaite (1) • Forfait F (0).",
+                recapFooterSummary: "Total : {count} équipes • {rounds} journées (Phase Aller uniquement)",
+                teamsSectionTag: "Gestion des clubs & équipes (de 2 à 10 équipes)",
+                teamsSectionHeading: "Liste des Équipes, Logos & Noms",
+                teamsSectionDesc: "Ajoutez de nouvelles équipes, personnalisez les logos et couleurs de chaque club.",
+                drawSectionTag: "Système officiel de tirage au sort",
+                drawSectionHeading: "Tirage des boules et affectation aux clubs",
+                drawSectionDesc: "Tirez la boule au hasard puis affectez-la manuellement à une équipe via la liste déroulante.",
+                drawStatusSummaryHeading: "État d'affectation des numéros de tirage",
+                btnLiveDraw: "Tirage en Direct",
+                btnQuickDraw: "Tirage Rapide Complet",
+                btnResetDraw: "Réinitialiser Tirage",
+                randomBallBadge: "Boule Aléatoire",
+                btnDrawSingleBall: "1. Tirer une boule au sort",
+                selectTeamForBall: "2. Choisir l'équipe pour ce numéro :",
+                btnAssign: "Valider l'affectation",
+                remainingBallsLabel: "Boules restantes dans l'urne :",
+                potBallsLabel: "Urne de tirage :",
+                drawBallLabel: "Tirage de la boule N°",
+                drawnTeamLabel: "Club tiré :",
+                drawnTeamSub: "Numéro officiel attribué : ",
+                drawNumPrefix: "N° Tirage : ",
+                btnEditTeamBadge: "Modifier Logo & Nom",
+                headingAller: "Phase Aller",
+                headingRetour: "Phase Retour (Inversion terrain)",
+                headingAllerMatches: "Phase Aller - Terrains, Horaires & Résultats",
+                headingRetourMatches: "Phase Retour - Terrains, Horaires & Résultats",
+                headingRetourSub: "Matchs retour (L'équipe visiteuse reçoit)",
+                scoreInstructions: "Scores indiqués par un chiffre uniquement ou 'F' pour forfait (0 pt pour forfait et 3 pts au vainqueur). Cliquez sur la date pour ouvrir le calendrier.",
+                btnTestScores: "Simuler scores",
+                btnClearScores: "Effacer scores",
+                headingStandings: "Tableau de Classement",
+                standingsRuleDesc: "Règle des points : Victoire = 3 pts | Nul = 2 pts | Défaite = 1 pt | Forfait (F) = 0 pt",
+                thRank: "Rang",
+                thRankShort: "No.",
+                thTeam: "Équipe",
+                thTeamLabel: "Team",
+                thP: "P",
+                thW: "W",
+                thD: "D",
+                thL: "L",
+                thF: "F",
+                thGD: "GD",
+                thPTS: "PTS",
+                thPlayed: "J",
+                thWon: "G (3)",
+                thDraw: "N (2)",
+                thLost: "P (1)",
+                thForfeit: "F (0)",
+                thGF: "BP",
+                thGA: "BC",
+                thDiff: "Diff",
+                thPoints: "Pts",
+                thLastMatches: "Forme",
+                headingMatrix: "Matrice des Confrontations Directes",
+                matrixSubDesc: "Ligne = Domicile | Colonne = Extérieur",
+                matrixHomeAway: "Dom \\ Ext",
+                modalAddTeamTitle: "Ajouter une nouvelle équipe",
+                modalEditTeamTitle: "Modifier l'équipe et le logo",
+                modalTeamNameLabel: "Nom de l'équipe",
+                modalTeamShortLabel: "Abréviation",
+                modalTeamColorLabel: "Couleur principale",
+                modalLogoHeader: "Logo de l'équipe (Image web ou upload local)",
+                modalUploadPrompt: "Téléverser depuis l'appareil :",
+                modalUrlPrompt: "Ou lien d'image externe (URL) :",
+                modalAltIconLabel: "Icône alternative",
+                btnDeleteTeam: "Supprimer l'équipe",
+                btnCancel: "Annuler",
+                btnSave: "Enregistrer",
+                modalSettingsHeading: "Paramètres du Tournoi, Logos & Terrains",
+                modalOfficialLogosHeader: "Logos officiels de l'entête (Lien externe ou fichier)",
+                modalLogo1Label: "Premier logo (Droit - Bureau Régional)",
+                modalLogo2Label: "Deuxième logo (Gauche - Organisation Nationale)",
+                modalOrUpload: "Ou téléverser :",
+                modalOrgLabel: "Organisateur officiel",
+                modalTournamentLabel: "Nom du Tournoi / Championnat",
+                modalSeasonLabel: "Saison sportive",
+                modalVenuesHeader: "Terrains homologués pour les rencontres",
+                modalVenuesNote: "Ajout et suppression de terrains",
+                btnAddVenue: "Ajouter terrain",
+                footerText: "Plateforme de gestion de championnat • Algorithme de Berger • Barème : Victoire (3), Nul (2), Défaite (1), Forfait (0)",
+                roundPrefix: "Journée ",
+                exemptLabel: "Exempt :",
+                scoreOptionPlaceholder: "- Non joué -",
+                forfeitDisplay: "F",
+                chooseTime: "-- Heure du match --",
+                printTitles: {
+                    recap: "Tableau Récapitulatif Officiel (Phase Aller)",
+                    roundposter: "Affiche Officielle des Rencontres de la Journée",
+                    aller: "Résultats et Horaires - Phase Aller",
+                    retour: "Résultats et Horaires - Phase Retour",
+                    standings: "Classement Général Officiel",
+                    matrix: "Matrice des Confrontations Directes",
+                    draw: "Liste des Équipes et Tirage au Sort"
+                }
+            }
+        };
+
+        function t(key) {
+            return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) || key;
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'fr' : 'ar';
+            document.documentElement.lang = currentLang;
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('lang-btn-text').textContent = t('langBtn');
+
+            // Mise à jour de tous les éléments statiques avec l'attribut data-i18n
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const k = el.getAttribute('data-i18n');
+                if (TRANSLATIONS[currentLang][k]) {
+                    el.textContent = TRANSLATIONS[currentLang][k];
+                }
+            });
+
+            updateFacadeHeaders();
+            renderAll();
+            showToast(currentLang === 'ar' ? "تم تحويل الموقع إلى اللغة العربية" : "Site basculé en Français avec succès !", "fa-language");
+        }
+
+        // ==========================================
+        // 2. Éléments d'heures par cadence de 30 min
+        // ==========================================
+        function generateTimeIntervalOptions(selectedTime) {
+            let html = `<option value="">${t('chooseTime')}</option>`;
+            for (let hour = 8; hour <= 23; hour++) {
+                for (let minute of [0, 30]) {
+                    const hh = String(hour).padStart(2, '0');
+                    const mm = String(minute).padStart(2, '0');
+                    const timeStr = `${hh}:${mm}`;
+                    const isSel = (selectedTime === timeStr) ? 'selected' : '';
+                    html += `<option value="${timeStr}" ${isSel}>${timeStr}</option>`;
+                }
+            }
+            return html;
+        }
+
+        // ==========================================
+        // 3. Options de scores : nombre seul et F pour forfait
+        // ==========================================
+        function buildScoreSelectOptions(currentVal) {
+            let html = `<option value="">${t('scoreOptionPlaceholder')}</option>`;
+            for (let g = 0; g <= 15; g++) {
+                const strG = String(g);
+                const isSel = (currentVal !== null && String(currentVal) === strG) ? 'selected' : '';
+                html += `<option value="${strG}" ${isSel}>${g}</option>`;
+            }
+            // Forfait sous la lettre F
+            const isForfait = (currentVal === 'FORFAIT') ? 'selected' : '';
+            html += `<option value="FORFAIT" ${isForfait} class="text-rose-400 font-bold font-mono">F (Forfait)</option>`;
+            return html;
+        }
+
+        // ==========================================
+        // 4. Données et configuration par défaut
+        // ==========================================
+        let tournamentSettings = {
+            title: "رزنامة بطولة كرة القدم 6 لاعبين",
+            organizer: "المكتب الجهوي للثقافة والرياضة والعمل بتوزر",
+            season: "موسم 2025-2026",
+            logo1: "LOGO BRCST_TOZ.jpg",
+            logo2: "logo.png",
+            venues: ["المركب الشبابي بتوزر", "الملعب البلدي بتوزر", "ملعب حامة الجريد"]
+        };
+
+        const DEFAULT_TEAMS = [
+            { id: 1, nameAr: "الإنتخابات", short: "إنتخاب", color: "#0284c7", icon: "fa-check-to-slot", customLogo: "", drawNumber: 1 },
+            { id: 2, nameAr: "و.التربية", short: "و.تربية", color: "#8b5cf6", icon: "fa-school", customLogo: "", drawNumber: 2 },
+            { id: 3, nameAr: "ص. والتجارة", short: "تجارة", color: "#f97316", icon: "fa-industry", customLogo: "", drawNumber: 3 },
+            { id: 4, nameAr: "البلدية", short: "بلدية", color: "#ec4899", icon: "fa-landmark", customLogo: "", drawNumber: 4 },
+            { id: 5, nameAr: "المطار", short: "مطار", color: "#f59e0b", icon: "fa-plane-departure", customLogo: "", drawNumber: 5 },
+            { id: 6, nameAr: "ض. الاجتماعي", short: "ضمان", color: "#06b6d4", icon: "fa-shield-halved", customLogo: "", drawNumber: 6 },
+            { id: 7, nameAr: "الاتصالات", short: "اتصال", color: "#3b82f6", icon: "fa-phone", customLogo: "", drawNumber: 7 },
+            { id: 8, nameAr: "الفلاحة", short: "فلاحة", color: "#84cc16", icon: "fa-wheat-awn", customLogo: "", drawNumber: 8 }
+        ];
+
+        let teams = [];
+        let matches = [];
+        let tempLogoData = "";
+        let currentTabKey = "recap";
+        let selectedPosterRound = 1;
+
+        // Variables pour le tirage au sort semi-manuel
+        let currentDrawnBall = null;
+        let isDrawingBall = false;
+
+        // ==========================================
+        // 5. Algorithme Universel de Berger (2 à 10 équipes)
+        // ==========================================
+        function generateMatchesUniversalBerger() {
+            matches = [];
+            const n = teams.length;
+            if (n < 2) return;
+
+            // En cas de nombre impair, on ajoute un "BYE" fictif (0)
+            const hasBye = (n % 2 !== 0);
+            const totalSlots = hasBye ? n + 1 : n;
+            const roundsPerPhase = totalSlots - 1;
+            const matchesPerRound = totalSlots / 2;
+
+            // Liste ordonnée des numéros de tirage (1 à n, plus le slot BYE si impair)
+            let rotation = Array.from({ length: totalSlots }, (_, i) => i + 1);
+
+            // Phase Aller (J1 à J_roundsPerPhase)
+            for (let r = 0; r < roundsPerPhase; r++) {
+                const roundNum = r + 1;
+                for (let m = 0; m < matchesPerRound; m++) {
+                    let homeDraw = rotation[m];
+                    let awayDraw = rotation[totalSlots - 1 - m];
+
+                    // Inversion de l'avantage du terrain pour équilibrer
+                    if (r % 2 === 1 && m === 0) {
+                        const temp = homeDraw;
+                        homeDraw = awayDraw;
+                        awayDraw = temp;
+                    }
+
+                    const isByeMatch = (homeDraw > n || awayDraw > n);
+                    let homeTeam = null;
+                    let awayTeam = null;
+                    let byeTeam = null;
+
+                    if (isByeMatch) {
+                        const activeNum = (homeDraw <= n) ? homeDraw : awayDraw;
+                        byeTeam = teams.find(t => t.drawNumber === activeNum) || null;
+                    } else {
+                        homeTeam = teams.find(t => t.drawNumber === homeDraw) || null;
+                        awayTeam = teams.find(t => t.drawNumber === awayDraw) || null;
+                    }
+
+                    const defaultVenue = tournamentSettings.venues && tournamentSettings.venues.length > 0 
+                        ? tournamentSettings.venues[m % tournamentSettings.venues.length] 
+                        : "الملعب الرئيسي";
+
+                    matches.push({
+                        id: `match_aller_r${roundNum}_m${m+1}`,
+                        round: roundNum,
+                        phase: 'aller',
+                        homeDraw: homeDraw,
+                        awayDraw: awayDraw,
+                        homeTeamId: homeTeam ? homeTeam.id : null,
+                        awayTeamId: awayTeam ? awayTeam.id : null,
+                        isBye: isByeMatch,
+                        byeTeamId: byeTeam ? byeTeam.id : null,
+                        homeScore: null,
+                        awayScore: null,
+                        date: "",
+                        time: "",
+                        venue: defaultVenue
+                    });
+                }
+
+                // Rotation type Berger (on fixe le premier élément, on fait tourner le reste)
+                const fixed = rotation[0];
+                const rest = rotation.slice(1);
+                rest.unshift(rest.pop());
+                rotation = [fixed, ...rest];
+            }
+
+            // Phase Retour (J_roundsPerPhase + 1 à 2 * roundsPerPhase) : inversion stricte domicile / extérieur
+            const allerMatches = matches.slice();
+            allerMatches.forEach(mAller => {
+                const retourRound = mAller.round + roundsPerPhase;
+                matches.push({
+                    id: mAller.id.replace('aller', 'retour').replace(`r${mAller.round}`, `r${retourRound}`),
+                    round: retourRound,
+                    phase: 'retour',
+                    homeDraw: mAller.awayDraw,
+                    awayDraw: mAller.homeDraw,
+                    homeTeamId: mAller.awayTeamId,
+                    awayTeamId: mAller.homeTeamId,
+                    isBye: mAller.isBye,
+                    byeTeamId: mAller.byeTeamId,
+                    homeScore: null,
+                    awayScore: null,
+                    date: "",
+                    time: "",
+                    venue: mAller.venue
+                });
+            });
+        }
+
+        window.onload = function() {
+            loadFromLocalStorage();
+            updateFacadeHeaders();
+            renderAll();
+        };
+
+        function initDefaultData() {
+            teams = JSON.parse(JSON.stringify(DEFAULT_TEAMS));
+            generateMatchesUniversalBerger();
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('tozeur_foot_teams_v2', JSON.stringify(teams));
+            localStorage.setItem('tozeur_foot_matches_v2', JSON.stringify(matches));
+            localStorage.setItem('tozeur_foot_settings_v2', JSON.stringify(tournamentSettings));
+            localStorage.setItem('tozeur_foot_lang', currentLang);
+            showToast(currentLang === 'ar' ? "تم حفظ جميع التعديلات بنجاح!" : "Enregistré avec succès !", "fa-circle-check");
+        }
+
+        function loadFromLocalStorage() {
+            const savedTeams = localStorage.getItem('tozeur_foot_teams_v2');
+            const savedMatches = localStorage.getItem('tozeur_foot_matches_v2');
+            const savedSettings = localStorage.getItem('tozeur_foot_settings_v2');
+            const savedLang = localStorage.getItem('tozeur_foot_lang');
+
+            if (savedLang && (savedLang === 'ar' || savedLang === 'fr')) {
+                currentLang = savedLang;
+                document.documentElement.lang = currentLang;
+                document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+                const langBtn = document.getElementById('lang-btn-text');
+                if (langBtn) langBtn.textContent = t('langBtn');
+            }
+
+            if (savedSettings) {
+                try { 
+                    tournamentSettings = JSON.parse(savedSettings); 
+                    if (!tournamentSettings.venues || !Array.isArray(tournamentSettings.venues)) {
+                        tournamentSettings.venues = ["المركب الشبابي بتوزر", "الملعب البلدي بتوزر"];
+                    }
+                    if (!tournamentSettings.logo1) tournamentSettings.logo1 = "LOGO BRCST_TOZ.jpg";
+                    if (!tournamentSettings.logo2) tournamentSettings.logo2 = "logo.png";
+                } catch(e){}
+            }
+            if (savedTeams && savedMatches) {
+                try {
+                    teams = JSON.parse(savedTeams);
+                    matches = JSON.parse(savedMatches);
+                } catch(e) {
+                    initDefaultData();
+                }
+            } else {
+                initDefaultData();
+            }
+        }
+
+        function resetTournament() {
+            const confirmMsg = currentLang === 'ar' ? "هل أنت متأكد من إعادة ضبط البطولة؟" : "Réinitialiser tout le championnat ?";
+            if (confirm(confirmMsg)) {
+                localStorage.removeItem('tozeur_foot_teams_v2');
+                localStorage.removeItem('tozeur_foot_matches_v2');
+                initDefaultData();
+                renderAll();
+                updateFacadeHeaders();
+                showToast(currentLang === 'ar' ? "تمت استعادة الإعدادات الأصلية" : "Paramètres restaurés", "fa-rotate-left");
+            }
+        }
+
+        function updateFacadeHeaders() {
+            document.getElementById('facade-organizer').textContent = tournamentSettings.organizer;
+            document.getElementById('facade-title').textContent = tournamentSettings.title;
+
+            const facadeSeason = document.getElementById('facade-season-badge');
+            if (facadeSeason) facadeSeason.textContent = tournamentSettings.season;
+            const facadeCount = document.getElementById('facade-team-count');
+            if (facadeCount) facadeCount.textContent = teams.length;
+
+            // تحديث الشعارات في الواجهة الرئيسية
+            const mainLogo1 = document.getElementById('main-facade-logo1');
+            const mainLogo2 = document.getElementById('main-facade-logo2');
+            if (mainLogo1 && tournamentSettings.logo1) mainLogo1.src = tournamentSettings.logo1;
+            if (mainLogo2 && tournamentSettings.logo2) mainLogo2.src = tournamentSettings.logo2;
+
+            // تحديث الشعارات في لوحة الرزنامة الشاملة (تأكيد العرض والتحديث)
+            const recapLogo1 = document.getElementById('recap-board-logo1');
+            const recapLogo2 = document.getElementById('recap-board-logo2');
+            if (recapLogo1) {
+                recapLogo1.src = tournamentSettings.logo1 || "LOGO BRCST_TOZ.jpg";
+            }
+            if (recapLogo2) {
+                recapLogo2.src = tournamentSettings.logo2 || "logo.png";
+            }
+
+            // تحديث الشعارات في واجهة البحث عن جولة
+            const uclLogo1 = document.getElementById('ucl-poster-logo1');
+            const uclLogo2 = document.getElementById('ucl-poster-logo2');
+            if (uclLogo1 && tournamentSettings.logo1) uclLogo1.src = tournamentSettings.logo1;
+            if (uclLogo2 && tournamentSettings.logo2) uclLogo2.src = tournamentSettings.logo2;
+
+            // تحديث الشعارات في واجهة الترتيب العام
+            const stdLogo1 = document.getElementById('standings-header-logo1');
+            const stdLogo2 = document.getElementById('standings-header-logo2');
+            if (stdLogo1 && tournamentSettings.logo1) stdLogo1.src = tournamentSettings.logo1;
+            if (stdLogo2 && tournamentSettings.logo2) stdLogo2.src = tournamentSettings.logo2;
+
+            // تحديث الشعارات في واجهة مصفوفة المواجهات
+            const mtxLogo1 = document.getElementById('matrix-header-logo1');
+            const mtxLogo2 = document.getElementById('matrix-header-logo2');
+            if (mtxLogo1 && tournamentSettings.logo1) mtxLogo1.src = tournamentSettings.logo1;
+            if (mtxLogo2 && tournamentSettings.logo2) mtxLogo2.src = tournamentSettings.logo2;
+
+            const mtxOrg = document.getElementById('matrix-header-organizer');
+            const mtxTour = document.getElementById('matrix-header-tournament');
+            const mtxSeason = document.getElementById('matrix-header-season');
+            if (mtxOrg) mtxOrg.textContent = tournamentSettings.organizer;
+            if (mtxTour) mtxTour.textContent = tournamentSettings.title;
+            if (mtxSeason) mtxSeason.textContent = tournamentSettings.season;
+
+            const venuesSpan = document.getElementById('facade-venues-list');
+            if (venuesSpan) {
+                venuesSpan.textContent = (tournamentSettings.venues && tournamentSettings.venues.length > 0)
+                    ? tournamentSettings.venues.join(' ، ')
+                    : (currentLang === 'ar' ? "لم يتم تحديد ملاعب" : "Aucun terrain");
+            }
+
+            // تحديث العنوان الملتصق باللوحة الشاملة المتطابق مع t2.jpg
+            const recapOrg = document.getElementById('recap-board-organizer');
+            const recapTour = document.getElementById('recap-board-tournament');
+            const recapSeason = document.getElementById('recap-board-season-badge');
+            const recapPhaseLabel = document.getElementById('recap-board-phase-label');
+            const recapBanner = document.getElementById('recap-banner-text');
+            const recapRule = document.getElementById('recap-footer-points-rule');
+
+            if (recapOrg) recapOrg.textContent = tournamentSettings.organizer;
+            if (recapTour) {
+                // التأكد من وجود كلمة "رزنامة" في بداية اسم البطولة باللوحة الشاملة
+                const tourTitle = tournamentSettings.title || "";
+                recapTour.textContent = tourTitle.startsWith("رزنامة") ? tourTitle : `رزنامة ${tourTitle}`;
+            }
+            if (recapSeason) recapSeason.textContent = tournamentSettings.season;
+            if (recapPhaseLabel) {
+                recapPhaseLabel.textContent = currentLang === 'ar' ? '(مرحلة الذهاب)' : '(Phase Aller)';
+            }
+            if (recapBanner) {
+                recapBanner.textContent = currentLang === 'ar' ? 'المقابلات - مرحلة الذهاب' : 'RENCONTRES - PHASE ALLER';
+            }
+            if (recapRule) {
+                recapRule.textContent = currentLang === 'ar' 
+                    ? '* قاعدة احتساب النقاط: فوز (3) • تعادل (2) • هزيمة (1) • انسحاب F (0).'
+                    : '* Barème des points : Victoire (3) • Nul (2) • Défaite (1) • Forfait F (0).';
+            }
+
+            // En-têtes pour l'affiche UEFA Champions League
+            const uclOrg = document.getElementById('ucl-poster-organizer');
+            const uclTour = document.getElementById('ucl-poster-tournament');
+            const uclSeason = document.getElementById('ucl-poster-season');
+            const uclVenues = document.getElementById('ucl-footer-venue-info');
+            if (uclOrg) uclOrg.textContent = tournamentSettings.organizer;
+            if (uclTour) uclTour.textContent = tournamentSettings.title;
+            if (uclSeason) uclSeason.textContent = tournamentSettings.season;
+            if (uclVenues) {
+                uclVenues.textContent = (tournamentSettings.venues && tournamentSettings.venues.length > 0)
+                    ? tournamentSettings.venues.join(' • ')
+                    : '';
+            }
+
+            // Têtes de pieds pour la carte classement
+            const standingOrg = document.getElementById('standings-footer-organizer');
+            const standingSeason = document.getElementById('standings-footer-season');
+            if (standingOrg) standingOrg.textContent = tournamentSettings.organizer;
+            if (standingSeason) standingSeason.textContent = tournamentSettings.season;
+
+            // En-têtes supérieurs de la carte classement (identiques à l'affiche de recherche de journée)
+            const standingHeadOrg = document.getElementById('standings-header-organizer');
+            const standingHeadTour = document.getElementById('standings-header-tournament');
+            const standingHeadSeason = document.getElementById('standings-header-season');
+            if (standingHeadOrg) standingHeadOrg.textContent = tournamentSettings.organizer;
+            if (standingHeadTour) standingHeadTour.textContent = tournamentSettings.title;
+            if (standingHeadSeason) standingHeadSeason.textContent = tournamentSettings.season;
+        }
+
+        // ==========================================
+        // 10. Impression ultra-ciblée selon chaque interface
+        // ==========================================
+        function printCurrentInterface(targetView) {
+            const viewKey = targetView || currentTabKey;
+            
+            // Retirer toutes les classes d'impression précédentes
+            document.body.classList.remove(
+                'print-mode-recap',
+                'print-mode-standings',
+                'print-mode-roundposter',
+                'print-mode-aller',
+                'print-mode-retour'
+            );
+
+            // Appliquer le mode spécifique
+            if (viewKey === 'standings') {
+                document.body.classList.add('print-mode-standings');
+            } else if (viewKey === 'roundposter') {
+                document.body.classList.add('print-mode-roundposter');
+            } else if (viewKey === 'aller') {
+                document.body.classList.add('print-mode-aller');
+            } else if (viewKey === 'retour') {
+                document.body.classList.add('print-mode-retour');
+            } else {
+                document.body.classList.add('print-mode-recap');
+            }
+
+            // Lancer l'impression
+            window.print();
+        }
+
+        function printFormattedPage() {
+            printCurrentInterface(currentTabKey);
+        }
+
+        // ==========================================
+        // 11. Export PNG pour Facebook
+        // ==========================================
+        function exportCurrentViewToPNG() {
+            if (currentTabKey === 'recap') {
+                exportElementToPNG('recap-print-area', 'Calendrier_Officiel');
+            } else if (currentTabKey === 'roundposter') {
+                exportElementToPNG('ucl-poster-container', `Affiche_Journee_${selectedPosterRound}`);
+            } else if (currentTabKey === 'standings') {
+                exportElementToPNG('standings-capture-box', 'Classement_General');
+            } else if (currentTabKey === 'matrix') {
+                exportElementToPNG('matrix-capture-box', 'Matrice_Matchs');
+            } else {
+                exportElementToPNG('recap-print-area', 'Calendrier_Officiel');
+            }
+        }
+
+        function exportElementToPNG(elementId, fileName) {
+            const target = document.getElementById(elementId);
+            if (!target) {
+                showToast(currentLang === 'ar' ? "لم يتم العثور على العنصر للتصدير" : "Élément introuvable pour export", "fa-triangle-exclamation");
+                return;
+            }
+
+            showToast(currentLang === 'ar' ? "جاري تجهيز الصورة بجودة عالية..." : "Génération de l'image PNG...", "fa-spinner");
+
+            html2canvas(target, {
+                backgroundColor: '#050b18',
+                scale: 2,
+                useCORS: true,
+                allowTaint: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `${fileName}_${new Date().toISOString().slice(0,10)}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast(currentLang === 'ar' ? "تم تحميل صورة PNG بنجاح للنشر على فيسبوك!" : "Image PNG téléchargée avec succès !", "fa-brands fa-facebook");
+            }).catch(err => {
+                console.error(err);
+                showToast(currentLang === 'ar' ? "حدث خطأ أثناء تصدير الصورة" : "Erreur lors de l'exportation", "fa-triangle-exclamation");
+            });
+        }
+
+        // ==========================================
+        // 12. Modal & Paramètres du Tournoi
+        // ==========================================
+        let tempSettingLogo1 = "";
+        let tempSettingLogo2 = "";
+
+        function openTournamentSettingsModal() {
+            document.getElementById('modal-tour-title').value = tournamentSettings.title;
+            document.getElementById('modal-tour-organizer').value = tournamentSettings.organizer;
+            document.getElementById('modal-tour-season').value = tournamentSettings.season;
+            
+            tempSettingLogo1 = tournamentSettings.logo1 || "LOGO BRCST_TOZ.jpg";
+            tempSettingLogo2 = tournamentSettings.logo2 || "logo.png";
+            
+            document.getElementById('modal-logo1-url').value = tempSettingLogo1.startsWith('data:') ? '' : tempSettingLogo1;
+            document.getElementById('modal-logo2-url').value = tempSettingLogo2.startsWith('data:') ? '' : tempSettingLogo2;
+            
+            updateSettingsLogoPreview(1, tempSettingLogo1);
+            updateSettingsLogoPreview(2, tempSettingLogo2);
+
+            renderVenuesListInModal();
+
+            const modal = document.getElementById('tournament-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function updateSettingsLogoPreview(logoNum, src) {
+            const img = document.getElementById(`preview-logo${logoNum}-img`);
+            if (img && src) {
+                img.src = src;
+            }
+        }
+
+        function handleOfficialLogoUpload(logoNum, event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                if (logoNum === 1) {
+                    tempSettingLogo1 = dataUrl;
+                    document.getElementById('modal-logo1-url').value = '';
+                } else {
+                    tempSettingLogo2 = dataUrl;
+                    document.getElementById('modal-logo2-url').value = '';
+                }
+                updateSettingsLogoPreview(logoNum, dataUrl);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function closeTournamentSettingsModal() {
+            const modal = document.getElementById('tournament-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function renderVenuesListInModal() {
+            const container = document.getElementById('venues-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            tournamentSettings.venues.forEach((v, index) => {
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between bg-slate-800 px-3 py-1.5 rounded-lg text-xs text-white";
+                item.innerHTML = `
+                    <span><i class="fa-solid fa-location-dot text-rose-400 ml-1"></i> ${v}</span>
+                    <button onclick="removeVenue(${index})" class="text-rose-400 hover:text-rose-300 text-xs">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function addVenueFromModal() {
+            const input = document.getElementById('new-venue-input');
+            const val = input.value.trim();
+            if (!val) return;
+
+            if (!tournamentSettings.venues.includes(val)) {
+                tournamentSettings.venues.push(val);
+                renderVenuesListInModal();
+                input.value = '';
+            } else {
+                showToast(currentLang === 'ar' ? "هذا الملعب موجود بالفعل" : "Ce terrain existe déjà", "fa-triangle-exclamation");
+            }
+        }
+
+        function removeVenue(index) {
+            if (tournamentSettings.venues.length <= 1) {
+                showToast(currentLang === 'ar' ? "يجب الإبقاء على ملعب واحد على الأقل" : "Au moins un terrain est requis", "fa-triangle-exclamation");
+                return;
+            }
+            tournamentSettings.venues.splice(index, 1);
+            renderVenuesListInModal();
+        }
+
+        function saveTournamentSettings() {
+            tournamentSettings.title = document.getElementById('modal-tour-title').value.trim() || tournamentSettings.title;
+            tournamentSettings.organizer = document.getElementById('modal-tour-organizer').value.trim() || tournamentSettings.organizer;
+            tournamentSettings.season = document.getElementById('modal-tour-season').value.trim() || tournamentSettings.season;
+
+            const url1 = document.getElementById('modal-logo1-url').value.trim();
+            const url2 = document.getElementById('modal-logo2-url').value.trim();
+
+            if (url1) {
+                tournamentSettings.logo1 = url1;
+            } else if (tempSettingLogo1) {
+                tournamentSettings.logo1 = tempSettingLogo1;
+            }
+
+            if (url2) {
+                tournamentSettings.logo2 = url2;
+            } else if (tempSettingLogo2) {
+                tournamentSettings.logo2 = tempSettingLogo2;
+            }
+
+            closeTournamentSettingsModal();
+            updateFacadeHeaders();
+            renderRecapBoard();
+            renderSchedule('aller', 'schedule-aller-container');
+            renderSchedule('retour', 'schedule-retour-container');
+            renderRoundPoster();
+            saveToLocalStorage();
+            showToast(currentLang === 'ar' ? "تم تحديث معلومات البطولة والشعارات بنجاح" : "Paramètres et logos enregistrés !", "fa-circle-check");
+        }
+
+        // ==========================================
+        // 13. Gestion des Équipes & Tirage au sort
+        // ==========================================
+        function openAddTeamModal() {
+            if (teams.length >= 10) {
+                showToast(currentLang === 'ar' ? "الحد الأقصى هو 10 فرق" : "Maximum 10 équipes atteint", "fa-triangle-exclamation");
+                return;
+            }
+            document.getElementById('add-team-name-ar').value = '';
+            document.getElementById('add-team-short').value = '';
+            const modal = document.getElementById('add-team-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeAddTeamModal() {
+            const modal = document.getElementById('add-team-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function confirmAddTeam() {
+            const nameAr = document.getElementById('add-team-name-ar').value.trim();
+            let short = document.getElementById('add-team-short').value.trim();
+            const color = document.getElementById('add-team-color').value;
+
+            if (!nameAr) {
+                alert(currentLang === 'ar' ? "يرجى كتابة اسم الفريق" : "Veuillez saisir le nom de l'équipe");
+                return;
+            }
+
+            if (!short) {
+                short = nameAr.substring(0, 5);
+            }
+
+            const nextId = teams.length > 0 ? Math.max(...teams.map(t => t.id)) + 1 : 1;
+            const newTeam = {
+                id: nextId,
+                nameAr: nameAr,
+                short: short,
+                color: color,
+                icon: "fa-futbol",
+                customLogo: "",
+                drawNumber: teams.length + 1
+            };
+
+            teams.push(newTeam);
+            closeAddTeamModal();
+            generateMatchesUniversalBerger();
+            renderAll();
+            updateFacadeHeaders();
+            saveToLocalStorage();
+            showToast(currentLang === 'ar' ? `تمت إضافة فريق (${nameAr})` : `Équipe (${nameAr}) ajoutée !`, "fa-check");
+        }
+
+        function deleteCurrentTeam() {
+            if (teams.length <= 2) {
+                showToast(currentLang === 'ar' ? "لا يمكن تقليص البطولة إلى أقل من فريقين" : "Minimum 2 équipes requis", "fa-triangle-exclamation");
+                return;
+            }
+            const id = parseInt(document.getElementById('modal-team-id').value, 10);
+            const team = teams.find(t => t.id === id);
+            if (!team) return;
+
+            const confirmDel = currentLang === 'ar' ? `هل أنت متأكد من حذف الفريق (${team.nameAr})؟` : `Supprimer l'équipe (${team.nameAr}) ?`;
+            if (confirm(confirmDel)) {
+                teams = teams.filter(t => t.id !== id);
+                teams.forEach((t, i) => {
+                    t.drawNumber = i + 1;
+                });
+                closeTeamModal();
+                generateMatchesUniversalBerger();
+                renderAll();
+                updateFacadeHeaders();
+                saveToLocalStorage();
+                showToast(currentLang === 'ar' ? "تم حذف الفريق وتحديث الرزنامة" : "Équipe supprimée et calendrier mis à jour", "fa-trash");
+            }
+        }
+
+        // ========================================================
+        // نظام القرعة اليدوية بسحب عشوائي للكرة واختيار يدوي للفريق
+        // ========================================================
+        function getAvailableBalls() {
+            const allNumbers = Array.from({ length: teams.length }, (_, i) => i + 1);
+            const assignedNumbers = teams.map(t => t.drawNumber).filter(n => n !== null && n !== undefined);
+            // Si une boule est tirée et en cours d'attribution, elle n'est plus dans le pot disponible
+            return allNumbers.filter(n => !assignedNumbers.includes(n) && n !== currentDrawnBall);
+        }
+
+        function renderManualDrawControls() {
+            const ballEl = document.getElementById('manual-draw-ball');
+            const ballStatusEl = document.getElementById('manual-ball-status');
+            const remainingCountEl = document.getElementById('remaining-balls-count');
+            const selectEl = document.getElementById('manual-team-select');
+            const assignBtn = document.getElementById('btn-assign-ball');
+            const drawBallBtn = document.getElementById('btn-draw-random-ball');
+            const potList = document.getElementById('pot-balls-list');
+            const completionStatus = document.getElementById('draw-completion-status');
+            const ballIndicator = document.getElementById('selected-ball-indicator');
+
+            if (!ballEl || !selectEl) return;
+
+            const assignedNumbers = teams.map(t => t.drawNumber).filter(n => n !== null && n !== undefined);
+            const available = getAvailableBalls();
+            if (remainingCountEl) remainingCountEl.textContent = available.length;
+
+            // Rendu visuel soigné des boules dans le pot avec distinction claire des couleurs
+            if (potList) {
+                potList.innerHTML = '';
+                for (let i = 1; i <= teams.length; i++) {
+                    const isCurrent = (currentDrawnBall === i);
+                    const isAssigned = assignedNumbers.includes(i);
+                    const isAvailable = available.includes(i);
+
+                    let ballClass = "";
+                    if (isCurrent) {
+                        // Boule activement tirée : Dorée brillante
+                        ballClass = "bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-black ring-4 ring-amber-300/80 shadow-lg scale-125 z-10 animate-bounce";
+                    } else if (isAssigned) {
+                        // Boule déjà affectée à une équipe : Verte émeraude
+                        ballClass = "bg-emerald-900/60 text-emerald-300 border border-emerald-500/50 opacity-70";
+                    } else {
+                        // Boule disponible dans l'urne : Bleue lumineuse
+                        ballClass = "bg-sky-600 hover:bg-sky-500 text-white font-bold border border-sky-300/80 shadow-md";
+                    }
+
+                    potList.innerHTML += `
+                        <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs transition-all duration-200 ${ballClass}" title="${isCurrent ? 'الكرة المسحوبة حالياً' : isAssigned ? 'تم تعيينها لفريق' : 'متاحة في الوعاء'}">
+                            ${i}
+                        </span>
+                    `;
+                }
+            }
+
+            // Mise à jour de la liste déroulante des équipes
+            const unassignedTeams = teams.filter(t => !t.drawNumber);
+            selectEl.innerHTML = '';
+
+            if (unassignedTeams.length === 0) {
+                selectEl.innerHTML = `<option value="">${currentLang === 'ar' ? '✅ تم تعيين جميع الفرق' : '✅ Toutes les équipes sont affectées'}</option>`;
+                selectEl.disabled = true;
+                if (assignBtn) assignBtn.disabled = true;
+                if (drawBallBtn) drawBallBtn.disabled = true;
+                if (ballStatusEl) ballStatusEl.textContent = currentLang === 'ar' ? 'اكتملت القرعة بنجاح لجميع الفرق!' : 'Tirage complet pour toutes les équipes !';
+                if (completionStatus) completionStatus.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> ${currentLang === 'ar' ? 'القرعة جاهزة والرزنامة محدثة' : 'Tirage complet et calendrier prêt'}</span>`;
+            } else {
+                selectEl.disabled = false;
+                selectEl.innerHTML = `<option value="">${currentLang === 'ar' ? '-- اختر الفريق من القائمة --' : '-- Choisir l\'équipe --'}</option>`;
+                unassignedTeams.forEach(t => {
+                    selectEl.innerHTML += `<option value="${t.id}">${t.nameAr} (${t.short})</option>`;
+                });
+                if (drawBallBtn) drawBallBtn.disabled = isDrawingBall || (available.length === 0);
+                if (assignBtn) assignBtn.disabled = (!currentDrawnBall);
+                if (completionStatus) {
+                    completionStatus.textContent = currentLang === 'ar' 
+                        ? `تم سحب ${teams.length - unassignedTeams.length} من ${teams.length}` 
+                        : `${teams.length - unassignedTeams.length} sur ${teams.length} attribués`;
+                }
+            }
+
+            if (currentDrawnBall) {
+                ballEl.textContent = currentDrawnBall;
+                ballEl.className = "w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-tr from-amber-500 via-amber-300 to-yellow-100 text-slate-950 font-black text-4xl sm:text-5xl flex items-center justify-center shadow-2xl border-4 border-amber-200 transition-all pulse-active";
+                if (ballIndicator) ballIndicator.textContent = `${currentLang === 'ar' ? 'الكرة' : 'Boule'}: ${currentDrawnBall}`;
+            } else {
+                ballEl.textContent = '?';
+                ballEl.className = "w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-tr from-slate-700 via-slate-600 to-slate-500 text-slate-200 font-black text-4xl sm:text-5xl flex items-center justify-center shadow-inner border-4 border-slate-600 transition-all";
+                if (ballIndicator) ballIndicator.textContent = `${currentLang === 'ar' ? 'الكرة' : 'Boule'}: -`;
+            }
+        }
+
+        function drawRandomBall() {
+            const available = getAvailableBalls();
+            if (available.length === 0) {
+                showToast(currentLang === 'ar' ? "لم تتبق أي كرة في الوعاء" : "Aucune boule restante dans l'urne", "fa-triangle-exclamation");
+                return;
+            }
+
+            isDrawingBall = true;
+            const ballEl = document.getElementById('manual-draw-ball');
+            const ballStatusEl = document.getElementById('manual-ball-status');
+            const drawBallBtn = document.getElementById('btn-draw-random-ball');
+
+            if (drawBallBtn) drawBallBtn.disabled = true;
+            if (ballStatusEl) ballStatusEl.textContent = currentLang === 'ar' ? "جاري سحب الكرة عشوائياً من الوعاء..." : "Tirage d'une boule au sort...";
+
+            let counter = 0;
+            const animInterval = setInterval(() => {
+                const randomPreview = available[Math.floor(Math.random() * available.length)];
+                if (ballEl) ballEl.textContent = randomPreview;
+                counter++;
+                if (counter > 14) {
+                    clearInterval(animInterval);
+                    const chosen = available[Math.floor(Math.random() * available.length)];
+                    currentDrawnBall = chosen;
+                    isDrawingBall = false;
+                    if (ballEl) ballEl.textContent = chosen;
+                    if (ballStatusEl) {
+                        ballStatusEl.innerHTML = `<span class="text-amber-300 font-extrabold text-xl sm:text-2xl">${currentLang === 'ar' ? 'خرجت الكرة رقم' : 'Boule tirée :'} [ ${chosen} ]</span>`;
+                    }
+                    renderManualDrawControls();
+                    showToast(currentLang === 'ar' ? `خرجت الكرة رقم (${chosen})` : `Boule N°${chosen} sortie de l'urne !`, "fa-dice");
+                }
+            }, 70);
+        }
+
+        function assignBallToSelectedTeam() {
+            if (!currentDrawnBall) {
+                showToast(currentLang === 'ar' ? "يرجى سحب كرة أولاً" : "Veuillez d'abord tirer une boule", "fa-triangle-exclamation");
+                return;
+            }
+
+            const selectEl = document.getElementById('manual-team-select');
+            const teamId = parseInt(selectEl.value, 10);
+            if (!teamId) {
+                showToast(currentLang === 'ar' ? "يرجى اختيار الفريق من القائمة" : "Veuillez choisir une équipe dans la liste", "fa-triangle-exclamation");
+                return;
+            }
+
+            const team = teams.find(t => t.id === teamId);
+            if (!team) return;
+
+            team.drawNumber = currentDrawnBall;
+            const assignedNum = currentDrawnBall;
+            currentDrawnBall = null;
+
+            syncMatchesWithDrawNumbers();
+            renderAll();
+            renderManualDrawControls();
+            saveToLocalStorage();
+
+            showToast(currentLang === 'ar' 
+                ? `تم تعيين الرقم (${assignedNum}) لفريق [${team.nameAr}]` 
+                : `Numéro ${assignedNum} attribué à [${team.nameAr}] !`, "fa-check");
+
+            if (getAvailableBalls().length === 0) {
+                showConfetti();
+                showToast(currentLang === 'ar' ? "اكتمل تعيين جميع أرقام القرعة بنجاح!" : "Tirage au sort entièrement complété !", "fa-trophy");
+            }
+        }
+
+        function resetManualDraw() {
+            const confirmMsg = currentLang === 'ar' 
+                ? "هل تريد مسح أرقام القرعة الحالية وإعادة فتح السحب من جديد؟" 
+                : "Réinitialiser tous les numéros de tirage pour recommencer ?";
+            if (confirm(confirmMsg)) {
+                teams.forEach(t => {
+                    t.drawNumber = null;
+                });
+                currentDrawnBall = null;
+                syncMatchesWithDrawNumbers();
+                renderAll();
+                renderManualDrawControls();
+                saveToLocalStorage();
+                showToast(currentLang === 'ar' ? "تم تفريغ أرقام القرعة وإعادة الكرات للوعاء" : "Tirage réinitialisé, urne reconstituée", "fa-rotate-left");
+            }
+        }
+
+        function renderTeams() {
+            const container = document.getElementById('teams-grid');
+            if (!container) return;
+            container.innerHTML = '';
+
+            teams.forEach(teamItem => {
+                const card = document.createElement('div');
+                card.className = "bg-night-card border border-slate-800 hover:border-sky-500/50 rounded-2xl p-4 shadow-lg transition-all duration-200 relative group";
+
+                const drawBadge = teamItem.drawNumber 
+                    ? `<span class="px-2.5 py-1 rounded-full text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 shadow">${t('drawNumPrefix')}${teamItem.drawNumber}</span>`
+                    : `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">${currentLang === 'ar' ? 'لم يسحب' : 'Non tiré'}</span>`;
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        ${getTeamLogoHtml(teamItem, "w-12 h-12")}
+                        ${drawBadge}
+                    </div>
+                    <div class="mt-3">
+                        <h4 class="font-bold text-white text-base leading-tight">${teamItem.nameAr}</h4>
+                        <div class="flex items-center justify-between mt-1 text-xs text-slate-400">
+                            <span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-[11px] text-sky-300 font-bold">${teamItem.short}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
+                        <button onclick="openTeamModal(${teamItem.id})" class="text-sky-300 hover:text-sky-200 transition flex items-center gap-1 font-semibold">
+                            <i class="fa-solid fa-pen text-[11px]"></i> ${t('btnEditTeamBadge')}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Afficher également un état synthétique des équipes dans la section de tirage
+            const drawStatusGrid = document.getElementById('draw-teams-status-grid');
+            if (drawStatusGrid) {
+                drawStatusGrid.innerHTML = '';
+                teams.forEach(t => {
+                    const hasNum = t.drawNumber !== null && t.drawNumber !== undefined;
+                    drawStatusGrid.innerHTML += `
+                        <div class="p-2.5 rounded-xl border ${hasNum ? 'border-amber-400/50 bg-amber-950/20' : 'border-slate-800 bg-slate-900/60'} flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2 truncate">
+                                ${getTeamLogoHtml(t, "w-6 h-6")}
+                                <span class="text-xs font-bold text-white truncate">${t.nameAr}</span>
+                            </div>
+                            <span class="w-6 h-6 rounded-full flex items-center justify-center font-mono font-black text-xs ${hasNum ? 'bg-amber-400 text-slate-950' : 'bg-slate-800 text-slate-500'}">
+                                ${hasNum ? t.drawNumber : '-'}
+                            </span>
+                        </div>
+                    `;
+                });
+            }
+
+            renderManualDrawControls();
+        }
+
+        function quickDraw() {
+            const numbers = Array.from({length: teams.length}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+            teams.forEach((teamItem, i) => {
+                teamItem.drawNumber = numbers[i];
+            });
+
+            currentDrawnBall = null;
+            syncMatchesWithDrawNumbers();
+            renderAll();
+            renderManualDrawControls();
+            showConfetti();
+            showToast(currentLang === 'ar' ? "تم إجراء القرعة السريعة بنجاح!" : "Tirage rapide effectué !", "fa-bolt");
+        }
+
+        function startInteractiveDraw() {
+            quickDraw();
+        }
+
+        function syncMatchesWithDrawNumbers() {
+            matches.forEach(m => {
+                if (!m.isBye) {
+                    const home = teams.find(t => t.drawNumber && t.drawNumber === m.homeDraw);
+                    const away = teams.find(t => t.drawNumber && t.drawNumber === m.awayDraw);
+                    m.homeTeamId = home ? home.id : null;
+                    m.awayTeamId = away ? away.id : null;
+                } else {
+                    const byeT = teams.find(t => t.drawNumber && (t.drawNumber === m.homeDraw || t.drawNumber === m.awayDraw));
+                    m.byeTeamId = byeT ? byeT.id : null;
+                }
+            });
+        }
+
+        function getTeamLogoHtml(team, sizeClass = "w-8 h-8") {
+            if (team && team.customLogo && team.customLogo.trim() !== "") {
+                return `<img src="${team.customLogo}" alt="${team.short}" class="${sizeClass} rounded-full object-cover border border-slate-700 shadow-sm" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid ${team.icon || 'fa-futbol'}\\'></i>';">`;
+            }
+            const icon = team ? (team.icon || 'fa-futbol') : 'fa-futbol';
+            const color = team ? team.color : '#0284c7';
+            return `<div class="${sizeClass} rounded-full flex items-center justify-center text-white text-xs shadow-sm flex-shrink-0" style="background-color: ${color}">
+                        <i class="fa-solid ${icon}"></i>
+                    </div>`;
+        }
+
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempLogoData = e.target.result;
+                document.getElementById('modal-team-img-url').value = '';
+                updateLogoPreview(tempLogoData);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateLogoPreviewFromInput() {
+            const url = document.getElementById('modal-team-img-url').value.trim();
+            if (url) {
+                tempLogoData = url;
+            }
+            updateLogoPreview(tempLogoData);
+        }
+
+        function updateLogoPreview(logoSrc) {
+            const box = document.getElementById('modal-preview-box');
+            const color = document.getElementById('modal-team-color').value;
+            const icon = document.getElementById('modal-team-icon').value;
+
+            if (logoSrc && logoSrc.trim() !== '') {
+                box.innerHTML = `<img src="${logoSrc}" class="w-full h-full object-cover">`;
+                box.style.backgroundColor = 'transparent';
+            } else {
+                box.innerHTML = `<i class="fa-solid ${icon} text-lg text-white"></i>`;
+                box.style.backgroundColor = color;
+            }
+        }
+
+        function openTeamModal(teamId) {
+            const team = teams.find(t => t.id === teamId);
+            if (!team) return;
+
+            document.getElementById('modal-team-id').value = team.id;
+            document.getElementById('modal-team-name-ar').value = team.nameAr;
+            document.getElementById('modal-team-short').value = team.short;
+            document.getElementById('modal-team-color').value = team.color;
+            document.getElementById('modal-team-icon').value = team.icon;
+            document.getElementById('modal-team-img-url').value = team.customLogo && !team.customLogo.startsWith('data:') ? team.customLogo : '';
+            document.getElementById('modal-team-file').value = '';
+            tempLogoData = team.customLogo || '';
+
+            updateLogoPreview(tempLogoData);
+
+            const modal = document.getElementById('team-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeTeamModal() {
+            const modal = document.getElementById('team-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function saveTeamModal() {
+            const id = parseInt(document.getElementById('modal-team-id').value, 10);
+            const team = teams.find(t => t.id === id);
+            if (!team) return;
+
+            team.nameAr = document.getElementById('modal-team-name-ar').value.trim() || team.nameAr;
+            team.short = document.getElementById('modal-team-short').value.trim() || team.short;
+            team.color = document.getElementById('modal-team-color').value;
+            team.icon = document.getElementById('modal-team-icon').value;
+            team.customLogo = tempLogoData;
+
+            closeTeamModal();
+            renderAll();
+            saveToLocalStorage();
+            showToast(currentLang === 'ar' ? "تم تحديث الفريق والشعار بنجاح" : "Équipe et logo mis à jour !", "fa-check");
+        }
+
+        function fillRandomScores(phase) {
+            matches.forEach(m => {
+                if (m.phase === phase && !m.isBye) {
+                    m.homeScore = Math.floor(Math.random() * 5);
+                    m.awayScore = Math.floor(Math.random() * 5);
+                }
+            });
+            renderAll();
+            saveToLocalStorage();
+            showToast(currentLang === 'ar' ? "تمت محاكاة النتائج" : "Scores simulés avec succès", "fa-wand-magic-sparkles");
+        }
+
+        function clearScores(phase) {
+            matches.forEach(m => {
+                if (m.phase === phase) {
+                    m.homeScore = null;
+                    m.awayScore = null;
+                }
+            });
+            renderAll();
+            saveToLocalStorage();
+            showToast(currentLang === 'ar' ? "تم مسح النتائج" : "Scores effacés", "fa-eraser");
+        }
+
+        function exportStandingsCSV() {
+            const standings = calculateStandings();
+            let csv = "Rang,Club,J,G,N,P,F,BP,BC,Diff,Pts\n";
+            standings.forEach((row, i) => {
+                csv += `${i+1},"${row.team.nameAr}",${row.played},${row.won},${row.draw},${row.lost},${row.forfeit},${row.gf},${row.ga},${row.diff},${row.points}\n`;
+            });
+
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Classement_Championnat.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("CSV généré !", "fa-file-csv");
+        }
+
+        // ==========================================
+        // 14. Calculs du Classement (Victoire: 3, Nul: 2, Défaite: 1, Forfait: 0)
+        // ==========================================
+        function calculateStandings() {
+            const stats = {};
+            teams.forEach(team => {
+                stats[team.id] = {
+                    team: team,
+                    played: 0,
+                    won: 0,
+                    draw: 0,
+                    lost: 0,
+                    forfeit: 0,
+                    gf: 0,
+                    ga: 0,
+                    diff: 0,
+                    points: 0
+                };
+            });
+
+            matches.forEach(m => {
+                if (m.isBye || !m.homeTeamId || !m.awayTeamId) return;
+
+                const hStats = stats[m.homeTeamId];
+                const aStats = stats[m.awayTeamId];
+                if (!hStats || !aStats) return;
+
+                const isHomeForfeit = (m.homeScore === 'FORFAIT');
+                const isAwayForfeit = (m.awayScore === 'FORFAIT');
+
+                if (isHomeForfeit && isAwayForfeit) {
+                    hStats.played++; aStats.played++;
+                    hStats.forfeit++; aStats.forfeit++;
+                } else if (isHomeForfeit) {
+                    hStats.played++; aStats.played++;
+                    hStats.forfeit++;
+                    aStats.won++;
+                    aStats.points += 3;
+                    aStats.gf += 2;
+                    hStats.ga += 2;
+                } else if (isAwayForfeit) {
+                    hStats.played++; aStats.played++;
+                    aStats.forfeit++;
+                    hStats.won++;
+                    hStats.points += 3;
+                    hStats.gf += 2;
+                    aStats.ga += 2;
+                } else if (m.homeScore !== null && m.awayScore !== null && m.homeScore !== '' && m.awayScore !== '') {
+                    const hs = parseInt(m.homeScore, 10);
+                    const as = parseInt(m.awayScore, 10);
+
+                    hStats.played++;
+                    aStats.played++;
+                    hStats.gf += hs; hStats.ga += as;
+                    aStats.gf += as; aStats.ga += hs;
+
+                    if (hs > as) {
+                        hStats.won++;
+                        hStats.points += 3;
+                        aStats.lost++;
+                        aStats.points += 1;
+                    } else if (hs < as) {
+                        aStats.won++;
+                        aStats.points += 3;
+                        hStats.lost++;
+                        hStats.points += 1;
+                    } else {
+                        hStats.draw++;
+                        aStats.draw++;
+                        hStats.points += 2;
+                        aStats.points += 2;
+                    }
+                }
+            });
+
+            const standingsArr = Object.values(stats);
+            standingsArr.forEach(s => {
+                s.diff = s.gf - s.ga;
+            });
+
+            standingsArr.sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                if (b.diff !== a.diff) return b.diff - a.diff;
+                if (b.gf !== a.gf) return b.gf - a.gf;
+                return a.team.nameAr.localeCompare(b.team.nameAr);
+            });
+
+            return standingsArr;
+        }
+
+        // ==========================================
+        // 15. Fonctions de Rendu des Vues (Affichage Phase Aller Uniquement dans la Récap)
+        // ==========================================
+        function renderRecapBoard() {
+            // Rendu des rangées de confrontations horizontales avec capsules biseautées fidèles à t2.jpg
+            const container = document.getElementById('recap-ucl-fixtures-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            // Filtrer pour ne garder strictement que la phase Aller
+            const allerMatches = matches.filter(m => m.phase === 'aller');
+            const roundsAller = Math.max(...allerMatches.map(m => m.round), 0);
+
+            const footerSummary = document.getElementById('recap-footer-info');
+            if (footerSummary) {
+                footerSummary.textContent = currentLang === 'ar'
+                    ? `إجمالي : ${teams.length} فِرق • ${roundsAller} جولات (مرحلة الذهاب فقط)`
+                    : `Total : ${teams.length} équipes • ${roundsAller} journées (Phase Aller uniquement)`;
+            }
+
+            for (let r = 1; r <= roundsAller; r++) {
+                const roundMatches = allerMatches.filter(m => m.round === r);
+                const byeMatch = roundMatches.find(m => m.isBye);
+                const playedMatches = roundMatches.filter(m => !m.isBye);
+
+                const roundRow = document.createElement('div');
+                roundRow.className = "flex items-center gap-2 sm:gap-3 w-full";
+
+                // كبسولة رقم الجولة (المستطيل الدائري الأيسر 1، 2، 3... بتصميم t2.jpg)
+                let roundBadgeHtml = `
+                    <div class="t2-round-pill w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex-shrink-0 flex items-center justify-center font-display font-black text-white text-sm sm:text-base shadow-md">
+                        ${r}
+                    </div>
+                `;
+
+                // شبكة مباريات الجولة بتصميم الكبسولات المقطوعة الأفقية المتجاورة
+                let matchesGridHtml = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 flex-1 w-full">`;
+
+                playedMatches.forEach(pm => {
+                    const home = teams.find(t => t.id === pm.homeTeamId);
+                    const away = teams.find(t => t.id === pm.awayTeamId);
+                    const homeName = home ? home.nameAr : (pm.homeDraw ? `${currentLang === 'ar' ? 'فريق' : 'Équipe'} ${pm.homeDraw}` : '---');
+                    const awayName = away ? away.nameAr : (pm.awayDraw ? `${currentLang === 'ar' ? 'فريق' : 'Équipe'} ${pm.awayDraw}` : '---');
+
+                    // Calcul de l'affichage du score ou VS
+                    let scoreHtml = `<span class="text-amber-300 sm:text-amber-200 font-extrabold text-[11px] sm:text-xs tracking-wider">VS</span>`;
+                    if (pm.homeScore !== null && pm.awayScore !== null && pm.homeScore !== '' && pm.awayScore !== '') {
+                        const hs = pm.homeScore === 'FORFAIT' ? 'F' : pm.homeScore;
+                        const as = pm.awayScore === 'FORFAIT' ? 'F' : pm.awayScore;
+                        scoreHtml = `<span class="text-white font-mono font-black text-xs sm:text-sm tracking-wider px-1.5 py-0.5 rounded bg-black/40">${hs} - ${as}</span>`;
+                    }
+
+                    matchesGridHtml += `
+                        <div class="t2-match-capsule px-2.5 py-1.5 sm:py-2 flex items-center justify-between text-white text-xs sm:text-sm font-bold min-h-[46px]">
+                            <!-- الفريق الأول مع مكانه المخصص للشعار -->
+                            <div class="flex items-center gap-1.5 flex-1 min-w-0 justify-start">
+                                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 bg-slate-900/80 border border-sky-400/40 shadow-sm">
+                                    ${getTeamLogoHtml(home, "w-full h-full")}
+                                </div>
+                                <span class="truncate font-bold text-[11px] sm:text-xs" title="${homeName}">${homeName}</span>
+                            </div>
+
+                            <!-- فاصل النتيجة أو VS -->
+                            <div class="flex-shrink-0 px-1 text-center">
+                                ${scoreHtml}
+                            </div>
+
+                            <!-- الفريق الثاني مع مكانه المخصص للشعار -->
+                            <div class="flex items-center gap-1.5 flex-1 min-w-0 justify-end text-left">
+                                <span class="truncate font-bold text-[11px] sm:text-xs text-right" title="${awayName}">${awayName}</span>
+                                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 bg-slate-900/80 border border-sky-400/40 shadow-sm">
+                                    ${getTeamLogoHtml(away, "w-full h-full")}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // Si nombre impair d'équipes (équipe exempte)
+                if (byeMatch) {
+                    const byeTeam = teams.find(t => t.id === byeMatch.byeTeamId);
+                    matchesGridHtml += `
+                        <div class="t2-match-capsule px-3 py-1.5 flex items-center justify-center gap-2 text-amber-300 text-xs font-bold min-h-[46px] border-amber-400/50 bg-amber-950/40">
+                            <div class="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 bg-slate-900 border border-amber-400/50">
+                                ${getTeamLogoHtml(byeTeam, "w-full h-full")}
+                            </div>
+                            <span>${t('exemptLabel')} ${byeTeam ? byeTeam.nameAr : '-'}</span>
+                        </div>
+                    `;
+                }
+
+                matchesGridHtml += `</div>`;
+
+                roundRow.innerHTML = roundBadgeHtml + matchesGridHtml;
+                container.appendChild(roundRow);
+            }
+        }
+
+        function renderRoundPoster() {
+            const selector = document.getElementById('ucl-round-selector');
+            const totalRounds = Math.max(...matches.map(m => m.round), 0);
+            if (selector && selector.children.length !== totalRounds) {
+                selector.innerHTML = '';
+                for (let r = 1; r <= totalRounds; r++) {
+                    const isSel = (r === selectedPosterRound) ? 'selected' : '';
+                    const phaseName = (r <= totalRounds / 2) ? t('headingAller') : t('headingRetour');
+                    selector.innerHTML += `<option value="${r}" ${isSel}>${t('roundPrefix')} ${r} (${phaseName})</option>`;
+                }
+            }
+
+            const currentRoundMatches = matches.filter(m => m.round === selectedPosterRound);
+            const titleEl = document.getElementById('ucl-poster-round-title');
+            const badgeEl = document.getElementById('ucl-poster-phase-badge');
+            const byeBox = document.getElementById('ucl-poster-bye-box');
+            const listEl = document.getElementById('ucl-matches-list');
+
+            if (!listEl) return;
+            listEl.innerHTML = '';
+
+            const isAller = selectedPosterRound <= totalRounds / 2;
+            if (titleEl) titleEl.textContent = `${t('roundPrefix')} ${selectedPosterRound}`;
+            if (badgeEl) badgeEl.textContent = isAller ? t('headingAller') : t('headingRetour');
+
+            const byeMatch = currentRoundMatches.find(m => m.isBye);
+            if (byeMatch && byeBox) {
+                const byeTeam = teams.find(t => t.id === byeMatch.byeTeamId);
+                byeBox.classList.remove('hidden');
+                byeBox.innerHTML = `<i class="fa-solid fa-moon text-amber-300 ml-1"></i> ${t('exemptLabel')} <span class="text-white font-black">${byeTeam ? byeTeam.nameAr : '-'}</span>`;
+            } else if (byeBox) {
+                byeBox.classList.add('hidden');
+            }
+
+            currentRoundMatches.filter(m => !m.isBye).forEach(m => {
+                const home = teams.find(t => t.id === m.homeTeamId);
+                const away = teams.find(t => t.id === m.awayTeamId);
+
+                const hasPlayed = (m.homeScore !== null && m.awayScore !== null && m.homeScore !== '' && m.awayScore !== '');
+                const scoreDisplay = hasPlayed 
+                    ? `<div class="ucl-score-box px-4 py-1.5 rounded-xl font-display font-black text-xl sm:text-2xl text-white tracking-widest">${m.homeScore === 'FORFAIT' ? 'F' : m.homeScore} - ${m.awayScore === 'FORFAIT' ? 'F' : m.awayScore}</div>`
+                    : `<div class="px-3 py-1 rounded-xl bg-cyan-950/70 border border-cyan-400/40 text-cyan-300 font-bold text-xs sm:text-sm">VS</div>`;
+
+                const row = document.createElement('div');
+                row.className = "ucl-match-row rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3";
+                row.innerHTML = `
+                    <div class="flex items-center gap-3 w-full sm:w-5/12 justify-start">
+                        ${getTeamLogoHtml(home, "w-10 h-10")}
+                        <div class="truncate">
+                            <h4 class="font-extrabold text-white text-sm sm:text-base">${home ? home.nameAr : '-'}</h4>
+                            <span class="text-[10px] text-cyan-300/70 font-mono">${home ? home.short : ''}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center my-1 sm:my-0">
+                        ${scoreDisplay}
+                        <div class="text-[10px] text-cyan-200/80 mt-1 flex items-center gap-1.5">
+                            <span><i class="fa-solid fa-location-dot text-rose-400"></i> ${m.venue || '-'}</span>
+                            ${m.time ? `<span>• <i class="fa-regular fa-clock"></i> ${m.time}</span>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 w-full sm:w-5/12 justify-end text-left">
+                        <div class="truncate text-right">
+                            <h4 class="font-extrabold text-white text-sm sm:text-base">${away ? away.nameAr : '-'}</h4>
+                            <span class="text-[10px] text-cyan-300/70 font-mono">${away ? away.short : ''}</span>
+                        </div>
+                        ${getTeamLogoHtml(away, "w-10 h-10")}
+                    </div>
+                `;
+                listEl.appendChild(row);
+            });
+        }
+
+        function changeSelectedRound(r) {
+            selectedPosterRound = parseInt(r, 10);
+            renderRoundPoster();
+        }
+
+        function renderSchedule(phase, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+
+            const phaseMatches = matches.filter(m => m.phase === phase);
+            const roundNums = [...new Set(phaseMatches.map(m => m.round))].sort((a, b) => a - b);
+
+            roundNums.forEach(roundNum => {
+                const roundCard = document.createElement('div');
+                roundCard.className = "bg-night-card border border-sky-900/60 rounded-2xl p-4 shadow-xl";
+
+                let matchesHtml = '';
+                const currentRoundMatches = phaseMatches.filter(m => m.round === roundNum);
+
+                currentRoundMatches.forEach(m => {
+                    if (m.isBye) {
+                        const byeTeam = teams.find(t => t.id === m.byeTeamId);
+                        matchesHtml += `
+                            <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold text-center">
+                                ${t('exemptLabel')} ${byeTeam ? byeTeam.nameAr : '-'}
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    const home = teams.find(t => t.id === m.homeTeamId);
+                    const away = teams.find(t => t.id === m.awayTeamId);
+
+                    const venueOptions = (tournamentSettings.venues || []).map(v => 
+                        `<option value="${v}" ${m.venue === v ? 'selected' : ''}>${v}</option>`
+                    ).join('');
+
+                    matchesHtml += `
+                        <div class="p-3 bg-slate-900/70 border border-slate-800 rounded-xl space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2 flex-1 justify-start truncate">
+                                    ${getTeamLogoHtml(home, "w-7 h-7")}
+                                    <span class="text-xs sm:text-sm font-bold text-white truncate">${home ? home.nameAr : '-'}</span>
+                                </div>
+
+                                <div class="flex items-center gap-1.5 flex-shrink-0">
+                                    <select onchange="updateMatchScore('${m.id}', 'home', this.value)" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white text-center font-bold">
+                                        ${buildScoreSelectOptions(m.homeScore)}
+                                    </select>
+                                    <span class="text-xs text-slate-500 font-bold">-</span>
+                                    <select onchange="updateMatchScore('${m.id}', 'away', this.value)" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white text-center font-bold">
+                                        ${buildScoreSelectOptions(m.awayScore)}
+                                    </select>
+                                </div>
+
+                                <div class="flex items-center gap-2 flex-1 justify-end truncate text-left">
+                                    <span class="text-xs sm:text-sm font-bold text-white truncate">${away ? away.nameAr : '-'}</span>
+                                    ${getTeamLogoHtml(away, "w-7 h-7")}
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-slate-800/80 text-[11px]">
+                                <input type="date" value="${m.date || ''}" onclick="try{this.showPicker();}catch(e){}" onchange="updateMatchMeta('${m.id}', 'date', this.value)" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-slate-300">
+                                <select onchange="updateMatchMeta('${m.id}', 'time', this.value)" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-slate-300">
+                                    ${generateTimeIntervalOptions(m.time || '')}
+                                </select>
+                                <select onchange="updateMatchMeta('${m.id}', 'venue', this.value)" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-slate-300">
+                                    ${venueOptions}
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                roundCard.innerHTML = `
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+                        <span class="font-extrabold text-sm text-sky-400">${t('roundPrefix')} ${roundNum}</span>
+                        <span class="text-[11px] text-slate-400 font-mono">${currentRoundMatches.filter(m => !m.isBye).length} مقابلة</span>
+                    </div>
+                    <div class="space-y-2.5">${matchesHtml}</div>
+                `;
+                container.appendChild(roundCard);
+            });
+        }
+
+        function updateMatchScore(matchId, side, value) {
+            const m = matches.find(match => match.id === matchId);
+            if (!m) return;
+            if (side === 'home') m.homeScore = (value === '') ? null : value;
+            if (side === 'away') m.awayScore = (value === '') ? null : value;
+            renderStandings();
+            renderMatrix();
+            if (selectedPosterRound === m.round) renderRoundPoster();
+            saveToLocalStorage();
+        }
+
+        function updateMatchMeta(matchId, field, value) {
+            const m = matches.find(match => match.id === matchId);
+            if (!m) return;
+            m[field] = value;
+            if (selectedPosterRound === m.round) renderRoundPoster();
+            saveToLocalStorage();
+        }
+
+        function renderStandings() {
+            const container = document.getElementById('standings-body');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const standings = calculateStandings();
+            standings.forEach((row, index) => {
+                const rankNum = index + 1;
+                const rowDiv = document.createElement('div');
+                rowDiv.className = "px-4 py-3 sm:px-6 sm:py-3.5 flex items-center hover:bg-sky-400/10 transition-colors text-white font-semibold text-xs sm:text-sm";
+
+                const diffDisplay = row.diff > 0 ? `+${row.diff}` : `${row.diff}`;
+
+                rowDiv.innerHTML = `
+                    <div class="w-12 sm:w-16 flex items-center justify-center flex-shrink-0">
+                        <div class="standing-rank-badge w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center font-display font-black text-white text-xs sm:text-sm">
+                            ${rankNum}.
+                        </div>
+                    </div>
+                    <div class="flex-1 flex items-center gap-2.5 sm:gap-3.5 pr-2 truncate">
+                        ${getTeamLogoHtml(row.team, "w-7 h-7 sm:w-8 sm:h-8")}
+                        <div class="truncate">
+                            <span class="font-bold text-white text-xs sm:text-base tracking-wide truncate block">${row.team.nameAr}</span>
+                            <span class="text-[10px] text-cyan-300/80 font-mono">${row.team.short}</span>
+                        </div>
+                    </div>
+                    <div class="w-9 sm:w-11 text-center font-display font-medium text-slate-100 flex-shrink-0">${row.played}</div>
+                    <div class="w-9 sm:w-11 text-center font-display font-medium text-cyan-200 flex-shrink-0">${row.won}</div>
+                    <div class="w-9 sm:w-11 text-center font-display font-medium text-slate-200 flex-shrink-0">${row.draw}</div>
+                    <div class="w-9 sm:w-11 text-center font-display font-medium text-slate-300 flex-shrink-0">${row.lost}</div>
+                    <div class="w-9 sm:w-11 text-center font-display font-bold ${row.forfeit > 0 ? 'text-rose-400' : 'text-slate-400'} flex-shrink-0">${row.forfeit}</div>
+                    <div class="w-11 sm:w-13 text-center font-display font-bold ${row.diff > 0 ? 'text-emerald-400' : row.diff < 0 ? 'text-rose-400' : 'text-slate-200'} flex-shrink-0">${diffDisplay}</div>
+                    <div class="w-12 sm:w-16 text-center font-display font-black text-sm sm:text-base text-white drop-shadow flex-shrink-0">${row.points}</div>
+                `;
+
+                container.appendChild(rowDiv);
+            });
+        }
+
+        function renderMatrix() {
+            const table = document.getElementById('matrix-table');
+            if (!table) return;
+            table.innerHTML = '';
+
+            let theadHtml = `<thead><tr class="bg-slate-900 text-slate-300 border-b border-slate-700"><th class="p-2 text-center text-[11px] font-bold">${t('matrixHomeAway')}</th>`;
+            teams.forEach(tAway => {
+                theadHtml += `<th class="p-2 text-center text-[11px] font-bold truncate max-w-[80px]">${tAway.short}</th>`;
+            });
+            theadHtml += `</tr></thead>`;
+
+            let tbodyHtml = `<tbody class="divide-y divide-slate-800">`;
+            teams.forEach(tHome => {
+                tbodyHtml += `<tr><td class="p-2 text-right font-bold text-white bg-slate-900/60 truncate max-w-[100px]">${tHome.short}</td>`;
+                teams.forEach(tAway => {
+                    if (tHome.id === tAway.id) {
+                        tbodyHtml += `<td class="p-2 bg-slate-950/80 text-slate-600 font-black">X</td>`;
+                    } else {
+                        const m = matches.find(match => match.homeTeamId === tHome.id && match.awayTeamId === tAway.id && !match.isBye);
+                        if (m && m.homeScore !== null && m.awayScore !== null && m.homeScore !== '' && m.awayScore !== '') {
+                            const hs = m.homeScore === 'FORFAIT' ? 'F' : m.homeScore;
+                            const as = m.awayScore === 'FORFAIT' ? 'F' : m.awayScore;
+                            tbodyHtml += `<td class="p-2 font-bold font-mono text-sky-300 bg-sky-950/20">${hs}-${as}</td>`;
+                        } else {
+                            tbodyHtml += `<td class="p-2 text-slate-500 font-mono text-[11px]">-</td>`;
+                        }
+                    }
+                });
+                tbodyHtml += `</tr>`;
+            });
+            tbodyHtml += `</tbody>`;
+
+            table.innerHTML = theadHtml + tbodyHtml;
+        }
+
+        function renderAll() {
+            renderRecapBoard();
+            renderTeams();
+            renderRoundPoster();
+            renderSchedule('aller', 'schedule-aller-container');
+            renderSchedule('retour', 'schedule-retour-container');
+            renderStandings();
+            renderMatrix();
+        }
+
+        function switchTab(tabKey) {
+            currentTabKey = tabKey;
+            const views = ['recap', 'teams', 'draw', 'roundposter', 'aller', 'retour', 'standings', 'matrix'];
+            views.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                const btn = document.getElementById(`tab-${v}`);
+                if (el && btn) {
+                    if (v === tabKey) {
+                        el.classList.remove('hidden');
+                        btn.classList.add('border-sky-400', 'text-sky-400', 'bg-sky-950/60');
+                        btn.classList.remove('border-transparent', 'text-slate-400');
+                    } else {
+                        el.classList.add('hidden');
+                        btn.classList.remove('border-sky-400', 'text-sky-400', 'bg-sky-950/60');
+                        btn.classList.add('border-transparent', 'text-slate-400');
+                    }
+                }
+            });
+
+            if (tabKey === 'roundposter') {
+                renderRoundPoster();
+            }
+        }
+
+        function showToast(message, iconClass = "fa-circle-check") {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            if (!toast || !toastMsg || !toastIcon) return;
+            toastMsg.textContent = message;
+            toastIcon.className = `fa-solid ${iconClass} text-sky-400 text-lg`;
+
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        function showConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
